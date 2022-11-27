@@ -1,7 +1,12 @@
 meta:
-  id: mtfw_sbc
+  id: mtframework_sbc
   file-extension: ksy
   endian: le
+  title:  Resident Evil 5 (MTFramework) collision format
+  application: Resident Evil 5/Biohazard 5
+  file-extension: sbc
+  license: CC0-1.0
+  ks-version: 0.8
 
 seq:
   - {id: id_magic, contents: [0x53, 0x42, 0x43, 0x31]} # SBC1
