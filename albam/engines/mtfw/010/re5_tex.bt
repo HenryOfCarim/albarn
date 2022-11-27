@@ -1,0 +1,45 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: re5_tex.bt
+//   Authors: HenryVIII
+//   Version: 0.1
+//   Purpose: Parsing Resident evil 5 .tex format
+//  Category: Modding
+// File Mask: *.tex
+//  ID Bytes: 54 45 58 00
+//   History: 
+//------------------------------------------------
+local uint64 i<hidden=true>;
+
+struct {
+    char idmagic[4];
+    ushort version;
+    ushort revision;
+    ubyte num_mipmaps;
+    ubyte image_count;
+    ubyte unk_01;
+    ubyte unk_02;
+    ushort width;
+    ushort height;
+    uint reserved;
+    char compression[4];
+    float red;
+    float green;
+    float blue;
+    float alpha;
+    if (image_count > 1) {
+        struct{
+            ushort unk_03[9];
+        } unk_offset[6];
+    };
+    uint mipmaps_offset[image_count*num_mipmaps];
+    // test mipmaps offsets
+    for (i=0; i<(image_count*num_mipmaps); i++)
+    {
+    FSeek(mipmaps_offset[i]);
+        struct{
+        uint test;
+        }mipmaps<fgcolor=cGreen>;
+    };
+}tex_dds;

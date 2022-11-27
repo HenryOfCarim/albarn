@@ -1,0 +1,71 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: re5_LMT.bt
+//   Authors: HenryVIII
+//   Version: 0.1
+//   Purpose: Parsing Resident evil 5 animation format
+//  Category: Modding
+// File Mask: lmt
+//  ID Bytes: 4C 4D 54 00
+//   History: 
+//------------------------------------------------
+local uint64 i<hidden=true>;
+local uint64 j<hidden=true>;
+local int64 savepos <hidden=true>;
+
+struct {
+    char id_magic[4];
+    ushort version;
+    ushort num_blocks;
+    uint block_offsets[num_blocks];
+} lmt_header <fgcolor=cYellow>;
+
+struct {
+for (i=0; i<lmt_header.num_blocks; i++)
+   {
+    if (lmt_header.block_offsets[i] > 0)
+    {
+    FSeek(lmt_header.block_offsets[i]);
+    struct
+     {
+        uint ofs_frame; //Offset
+        uint num_bones; //BoneCount
+        uint num_frames; //FrameCount
+        uint unk_01[25]; //LoopFrame (one uint)
+        uint count_01;
+        uint ofs_buffer;
+        uint unk_02[16];
+        uint ofc_02;
+        FSeek(ofs_frame);
+        savepos = 0;//need to retur to the position after a jump to float data 
+        for(j=0; j<num_bones; j++)
+        {
+            if(savepos > 0)
+            {
+                FSeek(savepos);
+            };
+            struct
+            {
+                ubyte buffer_type;//BufferType
+                ubyte usage;//Usage
+                ubyte joint_type;//JoinType
+                ubyte bone_index;//boneID
+                float unk_01;// weight ?
+                uint buffer_size;//BufferSize
+                uint buffer_offset;//BufferOffset
+                float unk_reference_data[4];//BufferRef
+                if(buffer_size>0)
+                {
+                    savepos = FTell();
+                    FSeek(buffer_offset);
+                    struct {
+                        ubyte data[buffer_size];
+                    }frame_data<fgcolor=cRed>;
+                };
+            } frame<fgcolor=cGreen>;
+        };
+     }block;
+    };
+   };
+} block_header<fgcolor=0xffff00>;
