@@ -7,61 +7,59 @@
 //   Purpose: Parsing Resident evil 5 mesh format
 //  Category: Modding
 // File Mask: .mod
-//  ID Bytes: 
+//  ID Bytes: 4D 4F 44 0
 //------------------------------------------------
 LittleEndian();
 local uint64 i<hidden=true>;
 
-    struct {
-
-int id_magic;
-ubyte version;
-byte version_rev;
-ushort bone_count;
-short mesh_count;
-ushort material_count;
-uint vertex_count;
-uint face_count;
-uint edge_count;
-uint vertex_buffer_size;
-uint vertex_buffer_2_size;
-uint texture_count;
-uint group_count;
-uint bonemap_count;
-uint bones_array_offset;
-uint group_offset;
-uint textures_array_offset;
-uint meshes_array_offset;
-uint vertex_buffer_offset;
-uint vertex_buffer_2_offset;
-uint index_buffer_offset;
-uint reserved_01;
-uint reserved_02;
-float sphere_x;
-float sphere_y;
-float sphere_z;
-float sphere_w;
-float box_min_x;
-float box_min_y;
-float box_min_z;
-float box_min_w;
-float box_max_x;
-float box_max_y;
-float box_max_z;
-float box_max_w;
-uint unk_01;
-uint unk_02;
-uint unk_03;
-uint unk_04;
-uint unk_05;
-uint unk_06;
-uint unk_07;
-uint unk_08;
-uint unk_09;
-uint unk_10;
-uint unk_11;
-uint reserved_03;
-
+struct {
+    char id_magic[4];
+    ubyte version;
+    byte version_rev;
+    ushort bone_count;
+    short mesh_count;
+    ushort material_count;
+    uint vertex_count;
+    uint face_count;
+    uint edge_count;
+    uint vertex_buffer_size;
+    uint vertex_buffer_2_size;
+    uint texture_count;
+    uint group_count;
+    uint bonemap_count;
+    uint bones_array_offset;
+    uint group_offset;
+    uint textures_array_offset;
+    uint meshes_array_offset;
+    uint vertex_buffer_offset;
+    uint vertex_buffer_2_offset;
+    uint index_buffer_offset;
+    uint reserved_01;
+    uint reserved_02;
+    float sphere_x;
+    float sphere_y;
+    float sphere_z;
+    float sphere_w;
+    float box_min_x;
+    float box_min_y;
+    float box_min_z;
+    float box_min_w;
+    float box_max_x;
+    float box_max_y;
+    float box_max_z;
+    float box_max_w;
+    uint unk_01;
+    uint unk_02;
+    uint unk_03;
+    uint unk_04;
+    uint unk_05;
+    uint unk_06;
+    uint unk_07;
+    uint unk_08;
+    uint unk_09;
+    uint unk_10;
+    uint unk_11;
+    uint reserved_03;
 } MeshHeader <fgcolor=cYellow>;
 
 FSeek(MeshHeader.bones_array_offset);
@@ -69,206 +67,169 @@ for (i=0; i<MeshHeader.bone_count; i++);
 
 if (MeshHeader.bone_count > 0) {
     struct {
-
-    ubyte anim_map_index;
-    ubyte parent_index; //255: root
-    ubyte mirror_index;
-    ubyte palette_index;
-    float unk_01;
-    float parent_distance;
-// Relative to the parent bone but I have no fuckin idea how to do this yet
-    float location_x;
-    float location_y;
-    float location_z;
-
-
+        ubyte anim_map_index;
+        ubyte parent_index; //255: root
+        ubyte mirror_index;
+        ubyte palette_index;
+        float unk_01;
+        float parent_distance;
+        // Relative to the parent bone but I have no fuckin idea how to do this yet
+        float location_x;
+        float location_y;
+        float location_z;
     } Bones[MeshHeader.bone_count] <fgcolor=0x8AFF33>;
 
 for (i=0; i<MeshHeader.bone_count; i++);
-
-if (MeshHeader.bone_count > 0) {
     struct {
-
-    float matrix[16];
-
-
+        float matrix[16];
     } BonesUnkMatrix[MeshHeader.bone_count] <fgcolor=cGray>;	
-}
+
 
 for (i=0; i<MeshHeader.bone_count; i++);
-
-if (MeshHeader.bone_count > 0) {
     struct {
-
-    float matrix[16];
-
-
+        float matrix[16];
     } BonesWorldTransformMatrix[MeshHeader.bone_count] <fgcolor=cBlack>;
-}
 
 if (MeshHeader.bonemap_count > 0) {
     struct {
-
-    ubyte a[256];
-
+        ubyte a[256];
     } BonesAnimationMapping[MeshHeader.bonemap_count] <fgcolor=cRed>;
 }
-
-}
-
     struct {
-
-    uint unk_01;
-    ubyte values[32];
-
-
+        uint unk_01;
+        ubyte values[32];
     } BoneMap[MeshHeader.bonemap_count] <fgcolor=cBlue>;
+};
+
 
 FSeek(MeshHeader.group_offset);
     struct {
-
-    uint group_index;
-    float unk_02;
-    float unk_03;
-    float unk_04;
-    float unk_05;
-    float unk_06;
-    float unk_07;
-    float unk_08;
-
+        uint group_index;
+        float unk_02;
+        float unk_03;
+        float unk_04;
+        float unk_05;
+        float unk_06;
+        float unk_07;
+        float unk_08;
     } GroupData[MeshHeader.group_count] <fgcolor=0xffff00>;
-
 
 
 FSeek(MeshHeader.textures_array_offset);
     struct {
-
-    char path[64];
-
+        char path[64];
     } TextureData[MeshHeader.texture_count] <fgcolor=0xffff00>;	
 
-
     struct {
-
-    ushort unk_01;
-    struct {
-    uint16 unk_flag_01 : 1;
-    uint16 unk_flag_02 : 1;
-    uint16 unk_flag_03 : 1;
-    uint16 unk_flag_04 : 1;
-    uint16 unk_flag_05 : 1;
-    uint16 unk_flag_06 : 1;
-    uint16 unk_flag_07 : 1;
-    uint16 unk_flag_08 : 1;
-    uint16 unk_flag_09 : 1;
-    uint16 unk_flag_10 : 1;
-    uint16 unk_flag_11 : 1;
-    uint16 flag_8_bones_per_vertex : 1;
-    uint16 unk_flag_13 : 1;
-    uint16 unk_flag_14 : 1;
-    uint16 unk_flag_15 : 1;
-    uint16 unk_flag_16 : 1;
-    } unk_flag;
-    ushort unk_02[10];
-    uint texture_indices[8];
-    float unk_12[26];
-
+        ushort unk_01;
+        struct {
+            uint16 unk_flag_01 : 1;
+            uint16 unk_flag_02 : 1;
+            uint16 unk_flag_03 : 1;
+            uint16 unk_flag_04 : 1;
+            uint16 unk_flag_05 : 1;
+            uint16 unk_flag_06 : 1;
+            uint16 unk_flag_07 : 1;
+            uint16 unk_flag_08 : 1;
+            uint16 unk_flag_09 : 1;
+            uint16 unk_flag_10 : 1;
+            uint16 unk_flag_11 : 1;
+            uint16 flag_8_bones_per_vertex : 1;
+            uint16 unk_flag_13 : 1;
+            uint16 unk_flag_14 : 1;
+            uint16 unk_flag_15 : 1;
+            uint16 unk_flag_16 : 1;
+        } unk_flag;
+        ushort unk_02[10];
+        uint texture_indices[8];
+        float unk_12[26];
     } MaterialData[MeshHeader.material_count] <fgcolor=0xffff00>;
 
 
 FSeek(MeshHeader.meshes_array_offset);
     struct {
-
-    ushort group_index;
-    ushort material_index;
-    ubyte constant; //always 1
-    ubyte level_of_detail;
-    ubyte unk_01;
-    ubyte vertex_format;
-    ubyte vertex_stride;
-    ubyte vertex_stride_2;
-    ubyte unk_03;
-    ubyte unk_flags;
-    ushort vertex_count;
-    ushort vertex_index_end;
-    uint vertex_index_start_1;
-    uint vertex_offset;
-    uint unk_05;
-    uint face_position;
-    uint face_count;
-    uint face_offset;
-    ubyte unk_06;
-    ubyte unk_07;
-    ushort vertex_index_start_2;
-    ubyte vertex_group_count;
-    ubyte bone_palette_index;
-    ubyte unk_08;
-    ubyte unk_09;
-    ushort unk_10;
-    ushort unk_11;
-
-
+        ushort group_index;
+        ushort material_index;
+        ubyte constant; //always 1
+        ubyte level_of_detail;
+        ubyte unk_01;
+        ubyte vertex_format;
+        ubyte vertex_stride;
+        ubyte vertex_stride_2;
+        ubyte unk_03;
+        ubyte unk_flags;
+        ushort vertex_count;
+        ushort vertex_index_end;
+        uint vertex_index_start_1;
+        uint vertex_offset;
+        uint unk_05;
+        uint face_position;
+        uint face_count;
+        uint face_offset;
+        ubyte unk_06;
+        ubyte unk_07;
+        ushort vertex_index_start_2;
+        ubyte vertex_group_count;
+        ubyte bone_palette_index;
+        ubyte unk_08;
+        ubyte unk_09;
+        ushort unk_10;
+        ushort unk_11;
     } Mesh[MeshHeader.mesh_count]<fgcolor=cGreen>;
     
     struct{
-
-    uint mesh_data_count;
+        uint mesh_data_count;
     } MeshDataCount[1]<fgcolor=cRed>;
 
     struct {
-    uint boneID;
-    float unk_01[3];
-    float bssphere[4];
-    float bboxMin[4];
-    float bboxMax[4];
-    float oabb_matrix[16];
-    float oabb_dimension[4];
-
+        uint boneID;
+        float unk_01[3];
+        float bssphere[4];
+        float bboxMin[4];
+        float bboxMax[4];
+        float oabb_matrix[16];
+        float oabb_dimension[4];
     } MeshData[MeshDataCount.mesh_data_count]<fgcolor=cGreen>;
 
 
 FSeek(MeshHeader.vertex_buffer_offset);
     struct {
-
-    short position_x;
-    short position_y;
-    short position_z;
-    short position_w;
-    struct {
-    ubyte index_1;
-    ubyte index_2;
-    ubyte index_3;
-    ubyte index_4;
-    } bone_indices;
-    struct {
-    ubyte index_1;
-    ubyte index_2;
-    ubyte index_3;
-    ubyte index_4;
-    } weight_values;
-    ubyte normal_x;
-    ubyte normal_y;
-    ubyte normal_z;
-    ubyte normal_w;
-    ubyte tangent_x;
-    ubyte tangent_y;
-    ubyte tangent_z;
-    ubyte tangent_w;
-    ushort uv_x;
-    ushort uv_y;
-    ushort uv2_x;
-    ushort uv2_y;
-    //ubyte blue;
-    //ubyte green;
-    //ubyte red;
-    //ubyte alpha;
-
+        short position_x;
+        short position_y;
+        short position_z;
+        short position_w;
+        struct {
+            ubyte index_1;
+            ubyte index_2;
+            ubyte index_3;
+            ubyte index_4;
+        } bone_indices;
+        struct {
+            ubyte index_1;
+            ubyte index_2;
+            ubyte index_3;
+            ubyte index_4;
+        } weight_values;
+        ubyte normal_x;
+        ubyte normal_y;
+        ubyte normal_z;
+        ubyte normal_w;
+        ubyte tangent_x;
+        ubyte tangent_y;
+        ubyte tangent_z;
+        ubyte tangent_w;
+        ushort uv_x;
+        ushort uv_y;
+        ushort uv2_x;
+        ushort uv2_y;
+        //ubyte blue;
+        //ubyte green;
+        //ubyte red;
+        //ubyte alpha;
     } Vertices[MeshHeader.vertex_count]<fgcolor=cPurple>;		
 
+
 FSeek(MeshHeader.index_buffer_offset);
-
     struct {
-
-    ushort index1;
-
+        ushort index1;
     } Faces[MeshHeader.face_count -1]<fgcolor=cYellow>;
