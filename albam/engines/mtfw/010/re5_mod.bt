@@ -93,7 +93,7 @@ for (i=0; i<MeshHeader.bone_count; i++);
 if (MeshHeader.bonemap_count > 0) {
     struct {
         ubyte a[256];
-    } BonesAnimationMapping[MeshHeader.bonemap_count] <fgcolor=cRed>;
+    } BonesAnimationMapping<fgcolor=cRed>;
 }
     struct {
         uint unk_01;
