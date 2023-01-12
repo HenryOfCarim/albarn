@@ -14,32 +14,16 @@ local uint64 i<hidden=true>;
 
 struct {
     char idmagic[4];
-    ushort version;
-    ushort revision;
-    ubyte num_mipmaps;
-    ubyte image_count;
+    uint packedData1;
+    uint packedData2;
+    ubyte num_textures;
+    ubyte format;
     ubyte unk_01;
     ubyte unk_02;
-    ushort width;
-    ushort height;
-    uint reserved;
-    char compression[4];
-    float red;
-    float green;
-    float blue;
-    float alpha;
-    if (image_count > 1) {
+    if (num_textures > 1) {
         struct{
             ushort unk_03[9];
         } unk_offset[6]<fgcolor=cRed>;
     };
-    uint mipmaps_offset[image_count*num_mipmaps];
-    // test mipmaps offsets
-    for (i=0; i<(image_count*num_mipmaps); i++)
-    {
-    FSeek(mipmaps_offset[i]);
-        struct{
-        uint test;
-        }mipmaps<fgcolor=cGreen>;
-    };
+    uint mipmaps_offset[num_textures*(packedData2 & 0x3f)];
 }tex_dds;

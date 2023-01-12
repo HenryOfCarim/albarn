@@ -4,20 +4,27 @@ meta:
   title: MTFramework animtation format
   file-extension: lmt
   license: CC0-1.0
-  ks-version: 0.8
+  ks-version: 0.9
 
 
 seq:
-  #- {id: id_magic, contents: [0x41, 0x52, 0x43, 0x00]}
-  - {id: id_magic, type: u4}
+  - {id: id_magic, contents: [0x4c, 0x4d, 0x54, 0x00]}
   - {id: version, type: u2}
   - {id: num_blocks, type: u2}
-  - {id: block_offsets, type: u4, repeat: expr, repeat-expr: num_blocks}
-instances:
-  block_header:
-    {pos: block_offsets[0], type: block_header}# TMP for only one block
+  - {id: block_offsets, type: block_offset, repeat: expr, repeat-expr: num_blocks}
 
 types:
+  block_offset:
+    seq:
+      - {id: ofc_block, type: u4}
+    instances:
+      is_used:
+        value: ofc_block != 0
+      body:
+          pos: ofc_block
+          type: block_header
+          if: is_used
+      
   block_header:
     seq:
       - {id: ofs_frame, type: u4}
