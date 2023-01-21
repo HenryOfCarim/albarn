@@ -1,0 +1,88 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: re5_sbc.bt
+//   Authors: Codeman02Fr
+//   Version: 0.1
+//   Purpose: editing Residen Evil 5 collision file
+//  Category: Modding 
+// File Mask: .sbc
+//  ID Bytes: 53 42 43 31
+//------------------------------------------------
+struct BBox
+{
+  float min[3];
+  float max[3];
+};
+
+struct PBBox
+{
+  float min[4];
+  float max[4];
+};
+
+struct vertex
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct SBC1Head
+{
+  char id_magic[4];
+  uint16 unk_01;
+  uint16 num_sbc_group;
+  uint16 unk_02;
+  uint16 unk_03;
+  uint32 mvtc;
+  uint32 num_faces;
+  uint32 num_vertices;
+  BBox bbox;
+};
+
+struct Re5Pbox
+{
+  PBBox box_a;
+  PBBox box_b;
+  ubyte ids[16];
+};
+    
+struct SBCgroup
+{
+  uint32 base;
+  uint32 ofs_tris;
+  uint32 ofs_b;
+  uint32 ofs_vert;
+  uint32 group_id;
+  BBox a;
+  BBox b;
+  BBox c;
+  uint16 ida;
+  uint16 idb;
+};
+
+struct Re5Triangle
+{
+  uint16 a;
+  uint16 b;
+  uint16 c;
+  uint16 ida;
+  uint16 idb;
+  uint16 idc;
+  uint16 idd;
+  uint16 ide;
+  uint16 idf;
+  uint16 idg;
+  uint16 idh;
+  uint16 idi;
+  uint16 idj;
+  uint16 idk;
+};
+
+SBC1Head Header;
+Re5Pbox Boxes[Header.mvtc];
+SBCgroup Groups[Header.num_sbc_group];
+Re5Triangle Triangles[Header.num_faces];
+vertex Vertices[Header.num_vertices];
