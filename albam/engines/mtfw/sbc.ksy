@@ -17,7 +17,7 @@ seq:
   - {id: mvtc, type: u4}
   - {id: facecount, type: u4}
   - {id: ncount, type: u4}
-  - {id: skipbbox, type: f4, repeat: expr, repeat-expr: 6}
+  - {id: bbox, type: tbox}
   - {id: boxes, type: re5v4quad, repeat: expr, repeat-expr: mvtc}
   - {id: groups, type: sbcgroup, repeat: expr, repeat-expr: boxcount}
   - {id: triangles, type : re5triangle, repeat: expr, repeat-expr: facecount}
@@ -57,10 +57,8 @@ types:
   
   re5v4quad: # 80 bytes
     seq:
-      - {id: a, type: vec4}
-      - {id: b, type: vec4}
-      - {id: c, type: vec4}
-      - {id: d, type: vec4}
+      - {id: boxa, type: pbox}
+      - {id: boxb, type: pbox}
       - {id: ida, type: u1}
       - {id: idb, type: u1}
       - {id: idc, type: u1}
@@ -79,6 +77,11 @@ types:
     seq:
       - {id: min, type: vec3}
       - {id: max, type: vec3}
+      
+  pbox:
+    seq:
+      - {id: min, type: vec4}
+      - {id: max, type: vec4}
       
   vec4:
     seq:
