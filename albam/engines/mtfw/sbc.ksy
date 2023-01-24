@@ -10,7 +10,7 @@ meta:
 
 seq:
   - {id: id_magic, contents: [0x53, 0x42, 0x43, 0x31]} # SBC1
-  - {id: unk_num_01, type: u2}
+  - {id: version, type: u2}
   - {id: num_groups, type: u2}
   - {id: unk_num_02, type: u2}
   - {id: unk_num_03, type: u2}
@@ -28,9 +28,9 @@ types:
   sbcgroup: #96 bytes
     seq:
       - {id: base, type: u4}
-      - {id: ofs_tris, type: u4}
+      - {id: start_tris, type: u4}
       - {id: ofs_b, type: u4}
-      - {id: ofs_vertices, type: u4}
+      - {id: start_vertices, type: u4}
       - {id: group_id, type: u4}
       - {id: boxa, type: tbox}
       - {id: boxb, type: tbox}
@@ -59,15 +59,10 @@ types:
     seq:
       - {id: boxa, type: pbox}
       - {id: boxb, type: pbox}
-      - {id: ida, type: u1}
-      - {id: idb, type: u1}
-      - {id: idc, type: u1}
-      - {id: idd, type: u1}
-      - {id: ide, type: u1}
-      - {id: idf, type: u1}
-      - {id: idg, type: u1}
-      - {id: idh, type: u1}
-      - {id: ids, type: u1, repeat: expr, repeat-expr: 8}
+      - {id: ida, type: u2} # always 0-255
+      - {id: idb, type: u2} # references to a box
+      - {id: idc, type: u2}
+      - {id: nulls, type: u1, repeat: expr, repeat-expr: 10}
       
   vertex:
     seq:
