@@ -14,7 +14,7 @@ seq:
   - {id: unk_03, type: u1}
   #- {id: head_data, type: unk_block_00, repeat: expr, repeat-expr: unk_num}
   - {id: head_data, type: unk_head_block_00}
-  - {id: head_data_01, type: unk_head_block_01}
+  #- {id: head_data_01, type: unk_head_block_01}
   #- {id: head_data_03, type: unk_head_block_02}
 
   
