@@ -33,7 +33,7 @@ types:
       - {id: idb, type: u4}
       - {id: idc, type: u4} #0, 2048, 6144 for idb =1
       - {id: face, type: unk_sub_str, if idb == 1}
-      - {id: unk_f_01, type: f4}
+      - {id: unk_cost, type: f4}
       
   unk_sub_str:
     seq:
