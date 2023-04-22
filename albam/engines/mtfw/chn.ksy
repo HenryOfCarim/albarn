@@ -12,16 +12,10 @@ seq:
   - {id: unk_01, type: u1}
   - {id: unk_02, type: u1}
   - {id: unk_03, type: u1}
-  #- {id: head_data, type: unk_block_00, repeat: expr, repeat-expr: unk_num}
+  #- {id: head_data, type: unk_block_00, repeat: expr, repeat-expr: unk_num} # doesn't work right because of relative offset
   - {id: head_data, type: unk_head_block_00}
-<<<<<<< Updated upstream
   #- {id: head_data_01, type: unk_head_block_01}
   #- {id: head_data_03, type: unk_head_block_02}
-=======
- # - {id: head_data_01, type: unk_head_block_01}
-#  - {id: head_data_03, type: unk_head_block_02}
->>>>>>> Stashed changes
-
   
 types:
   unk_8_floats:
@@ -58,7 +52,8 @@ types:
     instances:
       body:
         {pos: unk_data_pos + 16, type: unk_block_01, repeat: expr, repeat-expr: block_num}
-        
+		
+ #for testing purposes only       
   unk_head_block_01:
     seq:
       - {id: block_num, type: u1}
