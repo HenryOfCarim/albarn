@@ -1,0 +1,71 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: re5_chn.bt
+//   Authors: HenryVIII
+//   Version: 0.1
+//   Purpose: parsing Resident Evil 5 .chn file
+//  Category: Modding
+// File Mask: chn
+//  ID Bytes: 43 48 4e 00
+//   History: 
+//------------------------------------------------
+local uint64 i<hidden=true>;
+local uint local_ofc <hidden=true>;
+local uint savepoint <hidden=true>;
+
+struct header
+{
+    uint magic;
+    uint unk_id;
+    uint size;
+    ubyte unk_num;
+    ubyte unk_01;
+    ubyte unk_02;
+    ubyte unk_03;
+};
+
+struct block_body
+{
+    uint bone_type;
+    ubyte bone_anim_index;
+    ubyte unk_id_01;
+    ubyte unk_id_type;
+    ubyte unk_id_02;
+    uint unk_path[2];
+    float unk_floats[8];
+    float unk_00;
+    uint unk_01;
+    float unk_02;
+    float unk_03;
+    ubyte bone_parent;
+    ubyte bone_child;
+    uint16 unk_04;
+    uint unk_05;
+    uint unk_06;
+    float unk_07;
+    uint unk_path_01[4];
+};
+
+struct block
+{
+    local_ofc = FTell();
+    ubyte block_num;
+    ubyte unk_num;
+    uint16 unk_00;
+    uint unk_data_pos;
+    uint unk_ofc[2];
+    float unk_gravity[4];
+    savepoint = FTell();
+    FSeek(unk_data_pos + local_ofc);
+    block_body body[block_num]<fgcolor=0xAC6242>;
+    FSeek(savepoint);
+};
+
+
+header chn_header<fgcolor=cGreen>;
+for (i=0; i<chn_header.unk_num; i++)
+{
+    block chn_block<fgcolor=0x578439>;;
+};
+    
