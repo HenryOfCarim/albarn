@@ -12,16 +12,27 @@ seq:
   - {id: unk_01, type: u1}
   - {id: unk_02, type: u1}
   - {id: unk_03, type: u1}
-  #- {id: head_data, type: unk_block_00, repeat: expr, repeat-expr: unk_num} # doesn't work right because of relative offset
-  - {id: head_data, type: unk_head_block_00}
-  #- {id: head_data_01, type: unk_head_block_01}
-  #- {id: head_data_03, type: unk_head_block_02}
-  
+  - {id: head_data, type: head_block, repeat: expr, repeat-expr: unk_num}
+  - {id: body, type: child_type(_index), repeat: expr, repeat-expr: unk_num}
+    
 types:
-  unk_8_floats:
+  child_type:
+    params:
+      - {id: idx, type: u4}
+    instances:
+      offset:
+      - {value: _parent.head_data[idx].unk_data_pos + 16 + (32 * idx)}
+      body:
+      - {pos: offset, type: block_body, repeat: expr, repeat-expr: _parent.head_data[idx].block_num}
+  head_block:
     seq:
-      - {id: unk_fd_00, type: f4, repeat: expr, repeat-expr: 8}
-  unk_block_01:
+      - {id: block_num, type: u1}
+      - {id: unk_num, type: u1}
+      - {id: unk_00, type: u2}
+      - {id: unk_data_pos, type: u4}
+      - {id: unk_ofc, type: u4, repeat: expr, repeat-expr: 2}
+      - {id: unk_gravity, type: f4, repeat: expr, repeat-expr: 4}    
+  block_body:
     seq:
        - {id: bone_type, type: u4}
        - {id: bone_anim_index, type: u1}
@@ -41,39 +52,6 @@ types:
        - {id: unk_06, type: u4} 
        - {id: unk_07, type: f4} 
        - {id: unk_path_01, type: u4, repeat: expr, repeat-expr: 4}
-  unk_head_block_00:
+  unk_8_floats:
     seq:
-      - {id: block_num, type: u1}
-      - {id: unk_num, type: u1}
-      - {id: unk_00, type: u2}
-      - {id: unk_data_pos, type: u4}
-      - {id: unk_ofc, type: u4, repeat: expr, repeat-expr: 2}
-      - {id: unk_gravity, type: f4, repeat: expr, repeat-expr: 4}
-    instances:
-      body:
-        {pos: unk_data_pos + 16, type: unk_block_01, repeat: expr, repeat-expr: block_num}
-		
- #for testing purposes only       
-  unk_head_block_01:
-    seq:
-      - {id: block_num, type: u1}
-      - {id: unk_num, type: u1}
-      - {id: unk_05, type: u2}
-      - {id: unk_data_pos, type: u4}
-      - {id: unk_ofc, type: u4, repeat: expr, repeat-expr: 2}
-      - {id: unk_gravity, type: f4, repeat: expr, repeat-expr: 4}
-    instances:
-      body:
-        {pos: unk_data_pos + 48, type: unk_block_01, repeat: expr, repeat-expr: block_num}
-
-  unk_head_block_02:
-    seq:
-      - {id: block_num, type: u1}
-      - {id: unk_num, type: u1}
-      - {id: unk_05, type: u2}
-      - {id: unk_data_pos, type: u4}
-      - {id: unk_ofc, type: u4, repeat: expr, repeat-expr: 2}
-      - {id: unk_gravity, type: f4, repeat: expr, repeat-expr: 4}
-    instances:
-      body:
-        {pos: unk_data_pos + 80 , type: unk_block_01, repeat: expr, repeat-expr: block_num}
+      - {id: unk_fd_00, type: f4, repeat: expr, repeat-expr: 8}
