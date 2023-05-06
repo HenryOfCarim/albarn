@@ -1,0 +1,41 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: HenryVIII
+//   Version: 0.1
+//   Purpose: 
+//  Category: 
+// File Mask: .mtg
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct mtg_header
+{
+    uint32 magic;
+    uint32 version;
+    uint32 num_block_00;
+    uint32 num_block_01;
+    uint32 block_00_ofc;
+    uint32 block_01_ofc;
+};
+
+struct unk_block_00
+{
+    uint16 unk_00;
+    uint16 unk_01;
+    uint32 unk_03;
+};
+
+struct unk_block_01
+{
+    uint32 unk_00;
+    uint32 unk_01;
+    uint32 unk_02;
+    uint32 unk_03;
+    float unk_float;
+};
+
+mtg_header header<fgcolor=0x008000>;
+unk_block_00 block_00[header.num_block_00]<fgcolor=0x008080>;
+unk_block_01 block_01[header.num_block_01]<fgcolor=0x808000>;
