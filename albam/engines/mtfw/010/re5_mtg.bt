@@ -33,7 +33,7 @@ struct unk_block_01
     uint32 unk_01;
     ubyte unk_02[4];
     uint32 unk_03;
-    float unk_float;
+    float scale;
 };
 
 mtg_header header<fgcolor=0x008000>;
