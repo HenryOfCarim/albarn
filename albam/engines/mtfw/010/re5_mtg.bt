@@ -22,7 +22,7 @@ struct mtg_header
 
 struct unk_block_00
 {
-    uint16 unk_00;
+    uint16 render_group;
     uint16 unk_01;
     uint32 unk_03;
 };
