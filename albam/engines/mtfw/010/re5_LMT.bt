@@ -3,7 +3,7 @@
 //
 //      File: re5_LMT.bt
 //   Authors: HenryVIII
-//   Version: 0.1
+//   Version: 0.2
 //   Purpose: Parsing Resident evil 5 animation format
 //  Category: Modding
 // File Mask: lmt
@@ -58,10 +58,10 @@ struct
                 struct
                 {
                     FrameBlock frame_block<fgcolor=cGreen>;
-                    struct {
+                    struct
+                    {
                         FSeek(frame_block.ofs_frame);
                         savepos = 0;
-    
                         for(j=0; j<frame_block.num_bones; j++)
                         {
                             if (savepos>0)
@@ -73,7 +73,8 @@ struct
                             if(frame_data.buffer_size>0)
                             {
                                 FSeek(frame_data.buffer_offset);
-                                struct {
+                                struct
+                                {
                                     ubyte data[frame_data.buffer_size];
                                 }frame_data_body<fgcolor=cRed>;
                             };
