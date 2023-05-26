@@ -21,8 +21,8 @@ types:
       - {id: file_path, type: str, encoding: ascii, size: 64}
       - {id: file_id, type: s4}
       - {id: zsize, type: u4}
-      - {id: size, type: b24}
-      - {id: flags, type: b8}
+      - {id: size, type: b29}
+      - {id: flags, type: b3}
       - {id: offset, type: u4}
     instances:
       body:
