@@ -55,15 +55,15 @@ for (i=0; i<lmt_header.num_blocks; i++)
                 uint buffer_size;//BufferSize
                 uint buffer_offset;//BufferOffset
                 float unk_reference_data[4];//BufferRef
-                if(buffer_size>0)
-                {
-                    savepos = FTell();
-                    FSeek(buffer_offset);
-                    struct {
-                        ubyte data[buffer_size];
-                    }frame_data<fgcolor=cRed>;
-                };
             } frame<fgcolor=cGreen>;
+            savepos = FTell();
+            if(frame.buffer_size>0)
+            {
+                FSeek(frame.buffer_offset);
+                struct {
+                    ubyte data[frame.buffer_size];
+                }frame_data<fgcolor=cRed>;
+            };
         };
      }block;
     };
