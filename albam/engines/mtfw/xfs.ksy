@@ -26,10 +26,10 @@ types:
   struct_data:
     seq:
       - {id: name_ofc, type: u4}
-      - {id: struct_type, type: u1, enum: data_type}
+      - {id: entry_type, type: u1, enum: data_type}
       - {id: st_unk, type: u1}
       - {id: st_size, type: u2}
-      - {id: unk_ofc, type: u4,  repeat: expr, repeat-expr:  4}
+      - {id: unk_nulls, type: u4,  repeat: expr, repeat-expr:  4}
     instances:
       type_name:
         {pos: name_ofc + 16, type: str_name}
@@ -61,6 +61,11 @@ types:
       - {id count, type: u2}
       - {id unk_03, type: u4}
       - {id unk_04, type: u4}
+  xml_block00:
+    seq:
+      - {id: unk_header, type: xml_header}
+      - {id: quality, type: u4}
+      - {id: num_blocks, type: u4}
   xml_block0:
     seq:
       - {id: unk_header, type: xml_header}
@@ -102,21 +107,13 @@ types:
       
   unk_block:
     seq:
-      - {id: unk_type, type: u2}
-      - {id: unk_count, type: u2}
-      #- {id: unk_02, type: u2}
-      - {id: unk_03, type: u4}
-      - {id: unk_04, type: u4}
+      - {id: unk_header, type: xml_header}
       - {id: bool_val, type: u1}
       - {id: num_blocks, type: u4}
       
   block_file_data:
       seq:
-       - {id: test, type: xml_header}
-       #- {id: unk_fill_00, type: u1,  repeat: expr, repeat-expr:  3}
-       #- {id: test, type: unk_block}
-       - {id: quality, type: u4}
-       - {id: array_num, type: u4}
+       - {id: struct_01, type: xml_block00}
        - {id: struct_head_02, type: unk_block}
        - {id: struct_02, type: xml_block0, repeat: expr, repeat-expr: struct_head_02.num_blocks}
        - {id: struct_head_03, type: unk_block}

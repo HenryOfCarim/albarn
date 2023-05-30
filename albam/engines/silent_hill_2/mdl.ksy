@@ -1,7 +1,7 @@
 meta:
   id: mdl
   endian: le
-  title: unfinished Silent Hill 2 mesh format
+  title: ufinished Silent Hill 2 mesh format
   file-extension: mdl
   license: CC0-1.0
   ks-version: 0.8
@@ -9,57 +9,61 @@ meta:
   
 seq:
   - {id: header, type: header_block}
-  - {id: unk_id, type: mesh_block, repeat: expr, repeat-expr: 2}
-  - {id: unk_obj, type: unk_objs,repeat: expr, repeat-expr: 8}
-  #- {id: unk_faces, type: faces, repeat: expr, repeat-expr: 140}
-  #- {id: unk_ofc, type: f4, repeat: expr, repeat-expr: 3}
-  #- {id: vertices, type:vertex_block, repeat: expr, repeat-expr: 260}
-  #- {id: vtxs, type: vertex, repeat: expr, repeat-expr: 260}
+  - {id: unk_meshes, type: mesh_block}
+  - {id: unk_fill, type: u4, repeat: expr, repeat-expr:40}
+  - {id: mesh_parts, type: unk_mesh_part,repeat: expr, repeat-expr: unk_meshes.num_mesh}
+  - {id: unk_faces, type: faces, repeat: expr, repeat-expr: 140} # 3ri knife hardcoded
+  - {id: unk_ofc, type: f4, repeat: expr, repeat-expr: 2}
+  - {id: vertices, type:vertex_block, repeat: expr, repeat-expr: 260}
 
 types:
   header_block:
     seq:
-        - {id: unk_1, type: u4}
-        - {id: unk_a, type: u1}
-        - {id: unk_b, type: u1}
-        - {id: unk_c, type: u2}
+        - {id: unk_00, type: u4}
+        - {id: unk_01, type: u1}
+        - {id: unk_02, type: u1}
+        - {id: unk_03, type: u2}
         - {id: num_textures, type: u4}
         - {id: ofs_textures, type: textures}
         - {id: unk_3, type: u4}
-        - {id: unk_4, type: u4}
+        - {id: unk_ofc, type: u4}
         - {id: unk_nulls, type: u4, repeat: expr, repeat-expr: 10}
       
   mesh_block:
     seq:
         - {id: unk_id, type: u4}
-        - {id: unk_7, type: u4}
-        - {id: unk_offs, type: u4} # +64
+        - {id: unk_00, type: u4}
+        - {id: unk_ofs_00, type: u4} # +64
+        - {id: num_matrix, type: u4}
+        - {id: unk_01, type: u4}
         - {id: unk_num, type: u4}
-        - {id: unk_9, type: u4}
-        - {id: unk_10, type: u4}
-        - {id: unk_11, type: u4}
-        - {id: unk_12, type: u4}
+        - {id: unk_02, type: u4} # offset after matrix
+        - {id: unk_002, type: u4}
         - {id: num_mesh, type: u4}
-        - {id: unk_fill_01, type: u4, repeat: expr, repeat-expr: 35}
-        - {id: unk_matrix, type: matrix,repeat: expr, repeat-expr: 1}
-        - {id: unk_fill_02, type: u4, repeat: expr, repeat-expr: 32} # optional or 24 or 12
+        - {id: unk_03, type: u4}
+        - {id: unk_04, type: u4}
+        - {id: ofs_vertices, type: u4}
+        - {id: unk_fill_01, type: u4, repeat: expr, repeat-expr: 20}
+        - {id: unk_ofs_01, type: u4}
+        - {id: unk_05, type: u4}
+        - {id: unk_06, type: u4}
+        - {id: unk_ofs_02, type: u4}
+        - {id: unk_ofs_03, type: u4}
+        - {id: unk_fill_02, type: u4, repeat: expr, repeat-expr: 3}
+        - {id: unk_block_ofc, type: u4} # offset before mesh blocks
+        - {id: unk_nulls, type: u4, repeat: expr, repeat-expr: 3}
+        - {id: unk_matrix, type: matrix,repeat: expr, repeat-expr: num_matrix}
+        - {id: unk_fill_03, type: u4, repeat: expr, repeat-expr: 12} # optional or 24 or 12
         
-  unk_objs:
+  unk_mesh_part:
     seq:
-      - {id: unk_mask_1, type: f4,repeat: expr, repeat-expr: 4}
-      - {id: unk_mask_2, type: f4,repeat: expr, repeat-expr: 4}
+      - {id: filler, type: u4, repeat: expr, repeat-expr: 12}
+      - {id: unk_float_00, type: f4,repeat: expr, repeat-expr: 4}
+      - {id: unk_float_01, type: f4,repeat: expr, repeat-expr: 4}
+      - {id: unk_float_02, type: f4,repeat: expr, repeat-expr: 4}
       - {id: unk_nulls, type: u4, repeat: expr, repeat-expr: 6}
       - {id: num_polygons, type: u4}
       - {id: unk_ints, type: u4, repeat: expr, repeat-expr: 13}
-      - {id: filler, type: u4, repeat: expr, repeat-expr: 16}
-  unk_obj_end:
-    seq:
-      - {id: unk_mask_1, type: f4,repeat: expr, repeat-expr: 4}
-      - {id: unk_mask_2, type: f4,repeat: expr, repeat-expr: 4}
-      - {id: unk_nulls, type: u4, repeat: expr, repeat-expr: 6}
-      - {id: num_polygons, type: u4}
-      - {id: unk_ints, type: u4, repeat: expr, repeat-expr: 13}
-      
   vertex_block:
     seq:
       - {id: pos, type: vertex}

@@ -265,8 +265,8 @@ mod_header Header<fgcolor=0x008000>;
 if (Header.num_bones > 0) {
     FSeek(Header.offset_bones);
     bone Bones[Header.num_bones]<fgcolor=0x008080>; 
-    matrix_4x4 Matrix_local_transform[Header.num_bones];
-    matrix_4x4 World_local_transform[Header.num_bones];
+    matrix_4x4 Local_transform[Header.num_bones];
+    matrix_4x4 World_transform[Header.num_bones];
     bone_anim_mapping Bone_map;
     bone_mapping Bones_mapping[Header.num_bone_mappings];
 };
