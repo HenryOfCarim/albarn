@@ -30,8 +30,7 @@ struct RenderGroups
 
 struct Preset
 {
-    ubyte visibility_flags[8];
-    ubyte unk_02[4];
+    ubyte visibility_flags[12];// every byte is a render group. 01 - hidden
     uint32 unk_03;
     float scale;
 };
