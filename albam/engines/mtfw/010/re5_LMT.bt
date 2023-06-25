@@ -19,19 +19,22 @@ struct LMTHeader
     char id_magic[4];
     ushort version;
     ushort num_blocks;
-    uint block_offsets[num_blocks];
+    uint block_offsets[num_blocks]; //there is 0 fill after
 };
 
-struct FrameBlock
+struct Track
 {
     uint ofs_frame; //Offset
     uint num_bones; //BoneCount
     uint num_frames; //FrameCount
-    uint unk_01[25]; //LoopFrame (one uint)
+    float unk_01[25]; //LoopFrame (one uint)
     uint count_01;
     uint ofs_buffer;
-    uint unk_02[16];
-    uint ofc_02;
+    uint16 unk_02[6];
+    uint16 sfx[2];
+    uint16 unk_03[24];
+    uint count_02;
+    uint ofs_buffer_01;
 };
 
 struct FrameData
@@ -46,6 +49,17 @@ struct FrameData
     float unk_reference_data[4];//BufferRef
 };
 
+struct Atk
+{
+    uint unk_00[2];
+};
+
+struct Atk2
+{
+    uint unk_00[2];
+};
+
+
 
 LMTHeader lmt_header<fgcolor=cYellow>;
 struct
@@ -57,12 +71,13 @@ struct
                 FSeek(lmt_header.block_offsets[i]);
                 struct
                 {
-                    FrameBlock frame_block<fgcolor=cGreen>;
+                    Track track<fgcolor=0xabbb82>;
+                    //savepos = FTell();
                     struct
                     {
-                        FSeek(frame_block.ofs_frame);
+                        FSeek(track.ofs_frame);
                         savepos = 0;
-                        for(j=0; j<frame_block.num_bones; j++)
+                        for(j=0; j<track.num_bones; j++)
                         {
                             if (savepos>0)
                             {
@@ -80,6 +95,13 @@ struct
                             };
                         };
                     }frames;
+                    if (track.ofs_buffer>0)
+                    {
+                        FSeek(track.ofs_buffer);
+                        Atk attack[track.count_01]<fgcolor=0x577806>;
+                        FSeek(track.ofs_buffer_01);
+                        Atk2 attack2[track.count_02]<fgcolor=0x977806>;
+                    };      
                 }anim_block;
             };
     };
