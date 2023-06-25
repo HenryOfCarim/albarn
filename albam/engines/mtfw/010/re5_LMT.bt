@@ -3,7 +3,7 @@
 //
 //      File: re5_LMT.bt
 //   Authors: HenryVIII
-//   Version: 0.2
+//   Version: 0.3
 //   Purpose: Parsing Resident evil 5 animation format
 //  Category: Modding
 // File Mask: lmt
@@ -22,6 +22,11 @@ struct LMTHeader
     uint block_offsets[num_blocks]; //there is 0 fill after
 };
 
+struct SFX
+{
+    uint16 sfx_id;
+};
+
 struct Track
 {
     uint ofs_frame; //Offset
@@ -30,9 +35,9 @@ struct Track
     float unk_01[25]; //LoopFrame (one uint)
     uint count_01;
     uint ofs_buffer;
-    uint16 unk_02[6];
-    uint16 sfx[2];
-    uint16 unk_03[24];
+    //uint16 unk_02[6];
+    SFX sfx[32];
+    //uint16 unk_03[24];
     uint count_02;
     uint ofs_buffer_01;
 };
@@ -51,14 +56,14 @@ struct FrameData
 
 struct Atk
 {
-    uint unk_00[2];
+    uint unk_00;
+    uint duration;
 };
 
 struct Atk2
 {
     uint unk_00[2];
 };
-
 
 
 LMTHeader lmt_header<fgcolor=cYellow>;
