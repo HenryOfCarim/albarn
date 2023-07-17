@@ -3,14 +3,14 @@
 //
 //      File: 
 //   Authors: HenryVIII
-//   Version: 0.1
+//   Version: 0.2
 //   Purpose: 
 //  Category: 
 // File Mask: 
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
-struct ccl_header
+struct CCLHeader
 {
     uint32 magic;
     uint32 id;
@@ -18,20 +18,29 @@ struct ccl_header
     uint32 size;
 };
 
-struct block
+struct PrimLocation
 {
-    uint32 unk_00;
-    uint16 unk_01;
-    uint16 unk_03;
+    float x_loc;
+    float y_loc;
+    float z_loc;
+};
+
+struct DataBlock
+{
+    uint32 primitive;
+    uint16 parent_bone; // anim index
+    uint16 child_bone; 
     ubyte unk_04;
     ubyte unk_05;
     uint16 unk_06;
-    uint unk_07;
-    float unk_floats[11];
-    uint32 unk_08;
+    uint16 unk_07;
+    uint16 unk_08;
+    PrimLocation prim_location;
+    float unk_floats[8];
+    uint32 unk_09;
 };
 
 
-ccl_header header;
-block data_blocks[header.block_num]<fgcolor=cYellow>;
+CCLHeader header<bgcolor=0x613340>;
+DataBlock data_blocks[header.block_num]<bgcolor=0x5f6935>;
 //block data_blocks;

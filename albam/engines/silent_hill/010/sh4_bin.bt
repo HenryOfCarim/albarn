@@ -1,0 +1,164 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+local uint64 savepoint<hidden=true>;
+struct Matrix4x4
+{
+    float val[16];
+};
+
+struct UnkBlock00
+{
+    uint32 unk_id;
+    uint32 unk_00;
+    uint32 unk_01;
+    uint32 unk_02;
+    uint32 unk_03[4];
+    uint32 num_meshes;
+    uint32 mesh_ofc;
+    uint32 unk_04[22];
+};
+
+struct UnkBlock01
+{
+    float unk_00[16];
+};
+
+struct TxHeader
+{
+    uint32 width;
+    uint32 height;
+    char type[4];
+    uint32 unk_00;
+    uint32 sizes[8];
+    uint32 mips[8];
+};
+
+struct MeshBlock
+{
+  float unk_float[18]<fgcolor=0x108010>;
+  uint32 unk_00[12];
+  uint32 unk_nulls[16];
+  uint32 unk_num_indexes;
+  uint32 unk_num_floats;
+  uint32 unk_01[5];
+  UnkBlock01 unk_floats[unk_num_floats]<fgcolor=0x008080>;  
+  uint16 unk_indexes[unk_num_indexes];
+  uint32 unk_02[2];
+};
+
+
+uint32 type_id;
+uint32 unk_00;
+uint32 texture_ofc; //texture
+uint32 unk_ofc_02;
+uint32 unk_null[28];
+UnkBlock00 unk_01<fgcolor=0x808000>;
+Matrix4x4 unk_matrices[3]<fgcolor=0x800080>;
+uint32 unk_02[20];
+float unk_03[53]<fgcolor=0x108010>;
+MeshBlock mesh_00<fgcolor=0x008080>;
+uint32 unk_04[35];
+MeshBlock mesh_01<fgcolor=0x008080>;
+float unk_05[35]<fgcolor=0x108010>;
+MeshBlock mesh_02<fgcolor=0x008080>;
+float unk_06[35]<fgcolor=0x108010>;
+MeshBlock mesh_03<fgcolor=0x008080>;
+uint32 unk_07[35]<fgcolor=0x108010>;
+uint16 unk_fill;
+MeshBlock mesh_04<fgcolor=0x008080>;
+uint32 unk_08[35]<fgcolor=0x108010>;
+uint16 unk_fill_01;
+MeshBlock mesh_05<fgcolor=0x008080>;
+uint32 unk_09[35]<fgcolor=0x108010>;
+uint16 unk_fill_02;
+MeshBlock mesh_06<fgcolor=0x008080>;
+uint32 ffs[16]<fgcolor=0xaf7500>;
+uint32 unk_10[19]<fgcolor=0x108010>;
+MeshBlock mesh_07<fgcolor=0x008080>;
+uint32 ffs_00[18]<fgcolor=0xaf7500>;
+uint32 unk_11[17]<fgcolor=0x108010>;
+MeshBlock mesh_08<fgcolor=0x008080>;
+uint32 ffs_01[18]<fgcolor=0xaf7500>;
+uint32 unk_12[17]<fgcolor=0x108010>;
+MeshBlock mesh_09<fgcolor=0x008080>;
+uint32 ffs_02[18]<fgcolor=0xaf7500>;
+uint32 unk_13[17]<fgcolor=0x108010>;
+MeshBlock mesh_10<fgcolor=0x008080>;
+uint16 unk_fill_03;
+uint32 ffs_03[18]<fgcolor=0xaf7500>;
+uint32 unk_14[17]<fgcolor=0x108010>;
+MeshBlock mesh_11<fgcolor=0x008080>;
+uint16 unk_fill_04;
+uint32 ffs_04[18]<fgcolor=0xaf7500>;
+uint32 unk_15[17]<fgcolor=0x108010>;
+MeshBlock mesh_12<fgcolor=0x008080>;
+uint16 unk_fill_05;
+uint32 ffs_05[18]<fgcolor=0xaf7500>;
+uint32 unk_16[17]<fgcolor=0x108010>;
+MeshBlock mesh_13<fgcolor=0x008080>;
+uint16 unk_fill_06;
+uint32 ffs_07[18]<fgcolor=0xaf7500>;
+uint32 unk_17[17]<fgcolor=0x108010>;
+MeshBlock mesh_14<fgcolor=0x008080>;
+uint32 ffs_08[18]<fgcolor=0xaf7500>;
+uint32 unk_18[17]<fgcolor=0x108010>;
+MeshBlock mesh_15<fgcolor=0x008080>;
+uint16 unk_fill_07;
+uint32 ffs_09[18]<fgcolor=0xaf7500>;
+uint32 unk_19[17]<fgcolor=0x108010>;
+MeshBlock mesh_16<fgcolor=0x008080>;
+uint16 unk_fill_08;
+uint32 ffs_10[18]<fgcolor=0xaf7500>;
+uint32 unk_20[17]<fgcolor=0x108010>;
+MeshBlock mesh_17<fgcolor=0x008080>;
+uint32 ffs_11[18]<fgcolor=0xaf7500>;
+uint32 unk_21[17]<fgcolor=0x108010>;
+MeshBlock mesh_18<fgcolor=0x008080>;
+uint32 ffs_12[18]<fgcolor=0xaf7500>;
+uint32 unk_22[17]<fgcolor=0x108010>;
+MeshBlock mesh_19<fgcolor=0x008080>;
+uint32 ffs_13[18]<fgcolor=0xaf7500>;
+uint32 unk_23[17]<fgcolor=0x108010>;
+MeshBlock mesh_20<fgcolor=0x008080>;
+uint16 unk_fill_08;
+uint32 ffs_14[18]<fgcolor=0xaf7500>;
+uint32 unk_24[17]<fgcolor=0x108010>;
+MeshBlock mesh_21<fgcolor=0x008080>;
+uint16 unk_fill_09;
+uint32 ffs_15[18]<fgcolor=0xaf7500>;
+uint32 unk_26[17]<fgcolor=0x108010>;
+//textures
+FSeek(texture_ofc);
+uint16 num_tx<fgcolor=0x102080>;
+uint16 num_tx_00;
+uint32 unk_tx_null[3];
+uint32 unk_tx_01[10]<fgcolor=0x00aaff>;
+savepoint = FTell();
+uint32 unk_tx_null_00[8];
+TxHeader tx_00<fgcolor=0xffaaff>;
+
+FSeek(savepoint+200);
+ubyte mip_1[8192]<fgcolor=0xaf7500>;
+FSeek(savepoint+8392);
+ubyte mip_2[2048]<fgcolor=0x70580>;
+FSeek(savepoint+10440);
+ubyte mip_3[512]<fgcolor=0x790000>;
+FSeek(savepoint+10952);
+ubyte mip_4[128]<fgcolor=0xaf7500>;
+FSeek(savepoint+11080);
+ubyte mip_5[32]<fgcolor=0xa007580>;
+FSeek(savepoint+11208);
+ubyte mip_7[8]<fgcolor=0xa007500>;
+FSeek(savepoint+11336);
+ubyte mip_8[8]<fgcolor=0xa007500>;

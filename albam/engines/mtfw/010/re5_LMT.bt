@@ -32,14 +32,15 @@ struct Track
     uint ofs_frame; //Offset
     uint num_bones; //BoneCount
     uint num_frames; //FrameCount
-    float unk_01[25]; //LoopFrame (one uint)
+    float unk_01[9]; //LoopFrame (one uint)
+    uint unk_02[16]; 
     uint count_01;
-    uint ofs_buffer;
+    uint ofs_buffer_01;
     //uint16 unk_02[6];
     SFX sfx[32];
     //uint16 unk_03[24];
     uint count_02;
-    uint ofs_buffer_01;
+    uint ofs_buffer_02;
 };
 
 struct FrameData
@@ -100,12 +101,12 @@ struct
                             };
                         };
                     }frames;
-                    if (track.ofs_buffer>0)
+                    if (track.ofs_buffer_01>0)
                     {
-                        FSeek(track.ofs_buffer);
-                        Atk attack[track.count_01]<fgcolor=0x577806>;
                         FSeek(track.ofs_buffer_01);
-                        Atk2 attack2[track.count_02]<fgcolor=0x977806>;
+                        Atk atk_hit[track.count_01]<fgcolor=0x577806>;
+                        FSeek(track.ofs_buffer_02);
+                        Atk2 atk_sfx[track.count_02]<fgcolor=0x977806>;
                     };      
                 }anim_block;
             };

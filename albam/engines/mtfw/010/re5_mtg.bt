@@ -14,8 +14,8 @@ struct MTGHeader
 {
     uint32 magic;
     uint32 version;
-    uint32 num_block_00;
-    uint32 num_block_01;
+    uint32 num_render_groups;
+    uint32 num_presets;
     uint32 block_00_ofc;
     uint32 block_01_ofc;
 };
@@ -36,5 +36,5 @@ struct Preset
 };
 
 MTGHeader header<fgcolor=0x008000>;
-RenderGroups render_groups[header.num_block_00]<fgcolor=0x008080>;
-Preset visibility_presets[header.num_block_01]<fgcolor=0x808000>;
+RenderGroups render_groups[header.num_render_groups]<fgcolor=0x008080>;
+Preset visibility_presets[header.num_presets]<fgcolor=0x808000>;

@@ -4,10 +4,13 @@ meta:
   title: MTFramework model format
   file-extension: mod
   license: CC0-1.0
-  ks-version: 0.8
+  ks-version: 0.10
 
 seq:
   - {id: header, type: mod_header}
+  - {id: vtx5_indices, type: unk_vtx5_block_00, repeat: expr, repeat-expr: header.unk_10,if: header.unk_10 != 0}
+  - {id: vtx5_uv, type: unk_vtx5_block_01, repeat: expr, repeat-expr: header.unk_09, if: header.unk_09 != 0}
+  - {id: vtx5_unk, type: unk_vtx5_block_02, repeat: expr, repeat-expr: header.unk_08, if: header.unk_08 != 0}
   - {id: bones, type: bone, repeat: expr, repeat-expr: header.num_bones}
   - {id: bones_matrix_1, type: matrix4x4, repeat: expr, repeat-expr: header.num_bones}
   - {id: bones_matrix_2, type: matrix4x4, repeat: expr, repeat-expr: header.num_bones}
@@ -64,7 +67,7 @@ types:
       - {id: unk_10, type: u4}
       - {id: unk_11, type: u4}
       - {id: reserved_03, type: u4}
-      - {id: unk_12, size: offset_bones - 176, if: unk_08 !=  0}
+      #- {id: unk_12, size: offset_bones - 176, if: unk_08 !=  0}
 
   bone:
     seq:
@@ -139,7 +142,27 @@ types:
       - {id: bbox_max, type: vec4}  # relative to parent bone
       - {id: local_transform, type: matrix4x4}
       - {id: absolute_position, type: vec4}
+    
+  unk_vtx5_block_00:
+    seq:
+      - {id: unk_01, type: u2}
+      - {id: unk_02, type: u2}
 
+  unk_vtx5_block_01:
+    seq:
+      - {id: unk_01, type: u2}
+      - {id: unk_02, type: u2}
+      - {id: unk_03, type: u4}
+      - {id: unk_05, type: u4}
+      - {id: unk_06, type: u4}
+      
+  unk_vtx5_block_02:
+    seq:
+      - {id: unk_00, type: u2}
+      - {id: unk_01, type: u2}
+      - {id: unk_02, type: u2}
+      - {id: unk_03, type: u2}
+      
   vec3:
     seq:
       - {id: x, type: f4}

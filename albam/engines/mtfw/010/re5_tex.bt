@@ -30,8 +30,8 @@ struct {
     float alpha;
     if (image_count > 1) {
         struct{
-            ushort unk_03[9];
-        } unk_offset[6]<fgcolor=cRed>;
+            float unk_03[27];
+        } unk_param<fgcolor=cRed>;
     };
     uint mipmaps_offset[image_count*num_mipmaps];
     // test mipmaps offsets

@@ -33,7 +33,7 @@ struct block_body
     ubyte unk_id_type;
     ubyte unk_id_02;
     uint unk_path[2];
-    float unk_floats[8];
+    float unk_floats[8]; // float 4 is something like viscosity
     float unk_00;
     uint unk_01;
     float unk_02;

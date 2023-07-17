@@ -14,7 +14,8 @@ local uint64 i<hidden=true>;
 local uint64 j<hidden=true>;
 local uint64 mesh_offset<hidden=true>;
 
-struct mod_header {
+struct MODHeader
+{
     char id_magic[4];
     ubyte version;
     byte revision;
@@ -54,9 +55,9 @@ struct mod_header {
     uint unk_02;
     uint unk_03;
     uint unk_04;
-    uint unk_05;
-    uint unk_06;
-    uint unk_07;
+    uint16 unk_05[2];
+    uint16 unk_06[2];
+    uint16 unk_07[2];
     uint unk_08;
     uint unk_09;
     uint unk_10;
@@ -64,7 +65,8 @@ struct mod_header {
     uint reserved_03;
 };
 
-struct bone{
+struct Bone
+{
 	ubyte anim_map_index;
 	ubyte parent_index; //255: root
 	ubyte mirror_index;
@@ -75,35 +77,40 @@ struct bone{
 	float location_y;
 	float location_z;
 };
-struct matrix_4x4{
+
+struct Matrix4x4
+{
     float matrix[16];
 };
 
-struct bone_anim_mapping {
+struct BoneAnimMapping
+{
 	ubyte a[256];
 } ;
 
- struct bone_mapping {
-        uint unk_01;
-        ubyte values[32];
- } ;
+ struct BoneMapping
+{
+    uint unk_01;
+    ubyte values[32];
+} ;
  
-struct  group{
-        uint group_index;
-        float unk_02;
-        float unk_03;
-        float unk_04;
-        float unk_05;
-        float unk_06;
-        float unk_07;
-        float unk_08;
+struct  Group
+{
+    uint group_index;
+    float unk_02;
+    float unk_03;
+    float unk_04;
+    float unk_05;
+    float unk_06;
+    float unk_07;
+    float unk_08;
 };
 
-struct texture_data {
+struct TextureData {
         char path[64];
 };
 
-struct material_data{
+struct MaterialData{
     ushort unk_01;
     struct {
         uint16 unk_flag_01 : 1;
@@ -128,7 +135,8 @@ struct material_data{
     float unk_12[26];
 };
 
-struct mod_mesh{
+struct ModMesh
+{
     ushort group_index;
     ushort material_index;
     ubyte constant; //always 1
@@ -140,8 +148,8 @@ struct mod_mesh{
     ubyte unk_03;
     ubyte unk_flags;
     ushort num_vertices;
-    ushort vertex_index_end;
-    uint vertex_index_start_1;
+    ushort vertex_position_end;
+    uint vertex_position_2;
     uint vertex_offset;
     uint unk_05;
     uint face_position;
@@ -149,7 +157,7 @@ struct mod_mesh{
     uint face_offset;
     ubyte unk_06;
     ubyte unk_07;
-    ushort vertex_index_start_2;
+    ushort vertex_position;
     ubyte vertex_num_groups;
     ubyte bone_palette_index;
     ubyte unk_08;
@@ -158,7 +166,8 @@ struct mod_mesh{
     ushort unk_11;
 };
 
-struct vtx0 {
+struct Vtx0
+{
     short position_x;
     short position_y;
     short position_z;
@@ -178,38 +187,40 @@ struct vtx0 {
     ushort uv3_y;
 };
 
-struct vtx{
-        short position_x;
-        short position_y;
-        short position_z;
-        short position_w;
-        struct {
-            ubyte index_1;
-            ubyte index_2;
-            ubyte index_3;
-            ubyte index_4;
-        } bone_indices;
-        struct {
-            ubyte index_1;
-            ubyte index_2;
-            ubyte index_3;
-            ubyte index_4;
-        } weight_values;
-        ubyte normal_x;
-        ubyte normal_y;
-        ubyte normal_z;
-        ubyte normal_w;
-        ubyte tangent_x;
-        ubyte tangent_y;
-        ubyte tangent_z;
-        ubyte tangent_w;
-        ushort uv_x;
-        ushort uv_y;
-        ushort uv2_x;
-        ushort uv2_y;
+struct Vtx
+{
+    short position_x;
+    short position_y;
+    short position_z;
+    short position_w;
+    struct {
+        ubyte index_1;
+        ubyte index_2;
+        ubyte index_3;
+        ubyte index_4;
+    } bone_indices;
+    struct {
+        ubyte index_1;
+        ubyte index_2;
+        ubyte index_3;
+        ubyte index_4;
+    } weight_values;
+    ubyte normal_x;
+    ubyte normal_y;
+    ubyte normal_z;
+    ubyte normal_w;
+    ubyte tangent_x;
+    ubyte tangent_y;
+    ubyte tangent_z;
+    ubyte tangent_w;
+    hfloat uv_x;
+    hfloat uv_y;
+    ushort uv2_x;
+    ushort uv2_y;
 };
 
-struct vtx5{
+struct Vtx5
+{
     short position_x;
     short position_y;
     short position_z;
@@ -242,7 +253,8 @@ struct vtx5{
     ushort uv_y;
 };
 
-struct mesh_data{
+struct MeshData
+{
     uint boneID;
     float unk_01[3];
     float bssphere[4];
@@ -252,64 +264,107 @@ struct mesh_data{
     float oabb_dimension[4];
 };
 
-struct tangent{ // only guess
+struct tangent// only guess
+{ 
     ubyte tangent_x;
     ubyte tangent_y;
     ubyte tangent_z;
     ubyte tangent_w;
 };
 
-//Parsing//
-mod_header Header<fgcolor=0x008000>;
-
-if (Header.num_bones > 0) {
-    FSeek(Header.offset_bones);
-    bone Bones[Header.num_bones]<fgcolor=0x008080>; 
-    matrix_4x4 Local_transform[Header.num_bones];
-    matrix_4x4 World_transform[Header.num_bones];
-    bone_anim_mapping Bone_map;
-    bone_mapping Bones_mapping[Header.num_bone_mappings];
+struct unk_8_block_00
+{
+    uint16 face_id;
+    uint16 unk_01;
 };
-FSeek(Header.offset_groups);
-group Groups[Header.num_groups];
-FSeek(Header.offset_textures);
-texture_data Textures[Header.num_textures];
-material_data Materials[Header.num_materials];
+
+struct unk_8_block_01
+{
+    uint16 unk_01;
+    uint16 unk_02;
+    uint32 unk_03[3];
+};
+
+struct unk_8_block_02
+{
+    uint16 unk_00[4];
+};
+
+struct unk_buff_2
+{
+    ubyte unk_00[4];
+    ubyte unk_01[4];
+};
+
+//Parsing//
+MODHeader header<fgcolor=0x008000>;
+if (header.unk_08 > 0)
+{
+    unk_8_block_00 unk_block_00[header.unk_10]<fgcolor=0x808000>; // shading vtx faces
+    unk_8_block_01 unk_block_01[header.unk_09]<fgcolor=0x800080>; // probably uv
+    unk_8_block_02 unk_block_02[header.unk_08]<fgcolor=0x108010>; //probably normals
+};
+if (header.num_bones > 0)
+{
+    FSeek(header.offset_bones);
+    Bone bones[header.num_bones]<fgcolor=0x008080>; 
+    Matrix4x4 local_transform[header.num_bones]<bgcolor=0x788673>;
+    Matrix4x4 world_transform[header.num_bones]<bgcolor=0x3d340c>;
+    BoneAnimMapping bone_anim_maping<bgcolor=0x4d1220>;
+    BoneMapping bones_mapping[header.num_bone_mappings];
+};
+FSeek(header.offset_groups);
+Group groups[header.num_groups];
+FSeek(header.offset_textures);
+TextureData textures[header.num_textures]<fgcolor=0x000ff7f>;
+MaterialData materials[header.num_materials]<fgcolor=0xaf7500>;
 
 struct{
-    FSeek(Header.offset_meshes);
+    FSeek(header.offset_meshes);
     mesh_offset = FTell();
-    for(i=0; i<(Header.num_meshes); i++) {
+    for(i=0; i<(header.num_meshes); i++) {
         FSeek(mesh_offset);
-        mod_mesh Mesh;
+        ModMesh mesh<fgcolor=0x00aaff>;
         mesh_offset = FTell();
+        FSeek(header.offset_buffer_indices + mesh[i].face_offset * 2 + mesh[i].face_position * 2);
+        struct{
+            for(j=0; j<(mesh.num_faces); j++)
+            uint16 idx;
+        }mesh_indices<fgcolor=0xD1CE23>;
+        FSeek(header.offset_buffer_vertices + (mesh[i].vertex_position * mesh[i].vertex_stride) + mesh[i].vertex_offset);
         struct {
-            for(j=0; j<(Mesh.num_vertices); j++){
-                if (Mesh.vertex_format == 0) {
-                    vtx0 Vertex0<fgcolor=cRed>;
+            for(j=0; j<(mesh.num_vertices); j++){
+                if (mesh.vertex_format == 0) {
+                    Vtx0 vertex0<fgcolor=cRed>;
                 }
-                else if (Mesh.vertex_format <= 4) {
-                    vtx Vertex<fgcolor=cPurple>;
+                else if (mesh.vertex_format <= 4) {
+                    Vtx vertex<fgcolor=cPurple>;
                 }
                 else{
-                    vtx5 Vertex5<fgcolor=0xD1CE00>;
+                    Vtx5 vertex5<fgcolor=0xD1CE00>;
                 };
             };
-        }Vertices;
+        }vertices;
     };   
-}Meshes;
+}meshes;
 
 FSeek(mesh_offset);
 uint NumMeshData<fgcolor=cRed>;
-mesh_data MeshData[NumMeshData]<fgcolor=cGreen>;
+MeshData mesh_data[NumMeshData]<fgcolor=cGreen>;
 
-if (Header.offset_buffer_vertices_2 != 0) {
-    if (Header.offset_buffer_vertices_2 != Header.offset_buffer_indices) {
-        tangent Tangent [(Header.size_vertex_buffer_2)/4]<fgcolor=0xADA2EE>;
-    };
+if (header.size_vertex_buffer_2 > 0){
+    FSeek(header.offset_buffer_vertices_2);
+    struct
+    {
+        unk_buff_2 unk_buffer[(header.size_vertex_buffer_2/8)];
+        //unk_buff_2 unk_buffer[30908];
+        //unk_buff_2 unk_buffer[44632];
+        //ubyte ida[header.size_vertex_buffer_2];
+    }buffer_2<bgcolor=cGreen>;
 };
 
-FSeek(Header.offset_buffer_indices);
-struct {
-    ushort index1;
-} Indexes[Header.num_faces -1]<fgcolor=cYellow>; //- 2 for modified files
+//FSeek(header.offset_buffer_indices);
+//struct
+// {
+//    ushort index1;
+//} indexes[header.num_faces -1]<fgcolor=cYellow>; //- 2 for modified files

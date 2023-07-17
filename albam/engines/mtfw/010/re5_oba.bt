@@ -1,0 +1,31 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: HenryVIII
+//   Version: 0.1
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+struct UnkBlock
+{
+    uint32 unk_00;
+    uint16 unk_01;
+    float unk_floats[8];
+    ubyte unk_02[4];
+    uint32 unk_03;
+};
+
+struct ObaHeader
+{
+    uint32 magic;
+    uint32 type;
+    uint32 num_blocks;
+};
+
+ObaHeader header<fgcolor=cYellow>;
+UnkBlock data_blocks[header.num_blocks]<fgcolor=cGreen>;

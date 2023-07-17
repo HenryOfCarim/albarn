@@ -1,0 +1,47 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+local uint64 savepoint<hidden=true>;
+
+struct Block00
+{
+    uint32 unk_00[4];
+};
+
+struct TxHeader
+{
+    uint32 width;
+    uint32 height;
+    char type[4];
+    uint32 unk_00;
+    uint32 unk_01[8];
+    uint32 mips[8];
+};
+
+uint32 id;
+uint32 unk_00;
+uint32 tx_ofc;
+FSeek(tx_ofc);
+uint16 tx_num<fgcolor=0x008000>;
+uint16 tx_num_00;
+uint32 nulls[3];
+uint32 unk_block[20]<fgcolor=0x808000>;
+Block00 block00[10];
+Block00 block01[10];
+uint32 nulls_00[8];
+TxHeader tx_01<fgcolor=0x808000>;
+uint32 nulls_01[8];
+TxHeader tx_02<fgcolor=0x808000>;
+uint32 nulls_02[8];
+TxHeader tx_03<fgcolor=0x808000>;
+
