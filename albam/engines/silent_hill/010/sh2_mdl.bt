@@ -1,0 +1,166 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+local uint64 savepoint<hidden=true>;
+local uint64 i<hidden=true>;
+local uint64 j<hidden=true>;
+
+struct Matrix4x4
+{
+    float val[16];
+};
+
+struct UnkBlock04
+{
+    uint32 unk_00[2];
+};
+
+struct UnkBlock05
+{
+    uint16 unk_00[3];
+};
+
+struct MeshHeader
+{
+    uint32 unk_id;// should be 03 00 ff ff
+    uint32 unk_num;
+    uint32 matrix_1_ofc;
+    uint32 matrix_1_num;
+    uint32 matrix_1_data_ofc;
+    uint32 matrix_2_num;
+    uint32 matrix_2_data_ofc;
+    uint32 matrix_2_ofc;
+    uint32 num_meshes;
+    uint32 mesh_ofc;
+    uint32 unk_00;
+    uint32 floats_ofc_00;
+    uint32 unk_num_04;
+    uint32 unk_ofc_04;
+    uint32 unk_num_05;
+    uint32 unk_ofc_05;
+    uint32 unk_next_mesh;
+    uint32 unk_num_06;
+    uint32 unk_ofc_06;
+    uint32 unk_num_07;
+    uint32 unk_ofc_07;
+    uint32 unk_04[3];
+    uint32 floats_ofc;
+    uint16 unk_05[6];
+    uint32 unk_ofc;
+    uint32 unk_06[12];
+};
+
+struct TestMeshBlock
+{
+    uint32 mesh_size<fgcolor=0x103090>;
+    uint32 unk_00;
+    uint32 unk_num_00;
+    uint32 unk_ofc_00;
+    uint32 unk_num_01;
+    uint32 unk_ofc_01;
+    uint32 unk_num_02;
+    uint32 unk_ofc_02;
+    uint32 unk_ofc_03;
+    uint32 unk_num_03;
+    uint32 unk_01[6]<fgcolor=cGreen>;
+    float unk_floats[12]<fgcolor=cBlue>;
+    uint32 test_00[2]<fgcolor=cGreen>;
+    uint32 num_faces;
+};
+
+//parsing
+uint32 unk_00;
+uint32 unk_01;
+uint32 textures_num;
+uint32 textures_ofc;
+uint32 unk_02;
+uint32 mesh_header_ofc;
+
+
+FSeek(mesh_header_ofc);
+savepoint = FTell();
+MeshHeader mesh_header<fgcolor=0x808000>;
+
+FSeek(mesh_header.matrix_1_ofc + savepoint);
+Matrix4x4 matrices[mesh_header.matrix_1_num]<fgcolor=cGreen>;
+
+FSeek(mesh_header.matrix_2_ofc + savepoint);
+Matrix4x4 matrices_2[mesh_header.matrix_2_num]<fgcolor=0x303090>;
+
+FSeek(mesh_header.matrix_1_data_ofc + savepoint);
+ubyte unk_matrix_1_data[mesh_header.matrix_1_num]<fgcolor=cYellow>;
+
+FSeek(mesh_header.matrix_2_data_ofc + savepoint);
+uint16 unk_matrix_2_data[mesh_header.matrix_2_num]<fgcolor=cBlue>;
+
+// mesh
+//FSeek(mesh_header.mesh_ofc + savepoint);
+//TestMeshBlock test_mesh;
+
+FSeek(mesh_header.mesh_ofc + savepoint);
+savepoint = FTell();
+    
+for(i=0; i<(mesh_header.num_meshes); i++)
+{
+    FSeek(savepoint);
+    savepoint = FTell();
+    TestMeshBlock test_mesh;  
+    //TestMeshBlock test_mesh;
+    FSeek(savepoint + test_mesh[i].unk_ofc_00);
+    
+    struct
+    {
+        for(j=0; j<(test_mesh[i].unk_num_00); j++)
+        {
+           uint16 test<fgcolor=0x80a010>; 
+        };
+    }unk_data_block_00;
+    if (test_mesh[i].unk_num_01 > 0)
+    {
+        FSeek(savepoint + test_mesh[i].unk_ofc_01);
+        struct
+        {
+            for(j=0; j<(test_mesh[i].unk_num_01); j++)
+            {
+               uint16 test<fgcolor=0x30a0a0>; 
+            };
+        }unk_data_block_01;
+    };
+    FSeek(savepoint + test_mesh[i].unk_ofc_02);
+    struct
+    {
+        for(j=0; j<(test_mesh[i].unk_num_02); j++)
+        {
+           uint16 test<fgcolor=0x30a0a0>; 
+        };
+    }unk_data_block_02;
+
+    FSeek(savepoint + test_mesh[i].unk_ofc_03);
+    struct
+    {
+        for(j=0; j<(test_mesh[i].unk_num_03); j++)
+        {
+           uint16 test<fgcolor=0x3050c0>; 
+        };
+    }unk_data_block_03;
+    savepoint = savepoint + test_mesh[i].mesh_size;
+};
+
+//FSeek(mesh_header.unk_ofc_04 + savepoint);
+//uint32 unk_block_04[mesh_header.unk_num_04]<fgcolor=0x8030a0>;
+
+//FSeek(mesh_header.unk_ofc_05 + savepoint);
+//UnkBlock04 unk_block_05[mesh_header.unk_num_05]<fgcolor=0xa05080>;
+
+//FSeek(mesh_header.unk_ofc_06 + savepoint);
+//UnkBlock05 unk_block_06[mesh_header.unk_num_06]<fgcolor=0xa0a080>;
