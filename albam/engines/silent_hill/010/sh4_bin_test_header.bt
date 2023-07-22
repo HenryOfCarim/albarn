@@ -3,7 +3,7 @@
 //
 //      File: 
 //   Authors: HenryVIII
-//   Version: 0.1
+//   Version: 0.2
 //   Purpose: Parsing Silent Hill 4 data container
 //  Category: Modding
 // File Mask: .bin
@@ -16,6 +16,8 @@ local uint64 checkpoint<hidden=true>;
 local uint64 index_start<hidden=true>;
 local uint64 vtx_start<hidden=true>;
 local uint64 mesh_data_start<hidden=true>;
+local uint64 mesh_block_num<hidden=true>;
+local uint64 cur_mesh_block_num<hidden=true>;
 local uint64 i<hidden=true>;
 local uint64 j<hidden=true>;
 local uint64 k<hidden=true>;
@@ -62,6 +64,11 @@ struct VtxBlock
     float y;
     float z;
     float unk_00[13];
+};
+
+struct UnkInts
+{
+    uint32 unk_00[20];
 };
 
 struct UnkBlock02
@@ -229,6 +236,7 @@ if (mesh_header.unk_id == 4294901763)
     // meshes
     FSeek(mesh_header.mesh_ofc + savepoint);
     savepoint = FTell();
+    mesh_block_num = 0;
     
     for(i=0; i<(mesh_header.num_meshes); i++)
     {
@@ -243,6 +251,8 @@ if (mesh_header.unk_id == 4294901763)
         FSeek(savepoint + mesh_block[i].unk_ofc_00);
         MeshInfo mesh_info;
         mesh_data_start = FTell();
+        mesh_block_num += mesh_info[i].unk_num;
+        cur_mesh_block_num = mesh_block_num - mesh_info[i].unk_num;
         for (j=0; j<(mesh_info[i].unk_num); j++)
         {   
             FSeek(mesh_data_start);
@@ -250,32 +260,28 @@ if (mesh_header.unk_id == 4294901763)
             vtx_start = FTell() + 32;
             MeshDataHeader mesh_data_header;
             mesh_data_start = FTell();
-            FSeek(vtx_start + mesh_data_header[j+i].unk_03);
-            //uint32 test<bgcolor=cRed>;
+            //
+            FSeek(vtx_start + mesh_data_header[cur_mesh_block_num + j].unk_03);
+            //vertex float
             struct
             {
-                for(k=0; k<(mesh_data_header[j+i].num_floats); k++)
+                for(k=0; k<(mesh_data_header[cur_mesh_block_num + j].num_floats); k++)
                 {
                     VtxBlock vtx_data<fgcolor=0xa0a080>;
                 };
             }vertices;
-            
-            FSeek(index_start + mesh_data_header[j+i].indices_ofc);
+            // indices ?
+            FSeek(index_start + mesh_data_header[cur_mesh_block_num + j].indices_ofc);
             struct
             {
-                for(k=0; k<(mesh_data_header[j+i].num_indices); k++)
+                for(k=0; k<(mesh_data_header[cur_mesh_block_num+j].num_indices); k++)
                 {
                     uint16 index<fgcolor=0x10c0c0>;
                 };
             }indices;
-            FSeek(index_start + mesh_data_header[j+i].unk_00_ofc);
-            struct
-            {
-                for(k=0; k<(mesh_data_header[j+i].unk_01); k++)
-                {
-                    uint index<fgcolor=0xc02060>;
-                };
-            }unk_ints;
+            //unk int data
+            FSeek(index_start + mesh_data_header[cur_mesh_block_num + j].unk_00_ofc);
+            UnkInts unk_ints<fgcolor=0xc02060>;
         };
         savepoint = savepoint + mesh_block[i].mesh_block_size;
     };
