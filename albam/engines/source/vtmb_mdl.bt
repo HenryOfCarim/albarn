@@ -1,0 +1,522 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: vtmb_mdl.bt
+//   Authors: 
+//   Version: 
+//   Purpose: Parsing Vampire: The Masquerade – Bloodlines .mdl format
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+local uint64 checkpoint;
+struct Vector
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct Vertex
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+//3x4 maxrix
+struct Matrix
+{
+    float val[12];
+};
+
+struct MDLBone//mstudiobone_t
+{
+    uint32      sznameindex;//relative offset to a string
+    uint32      parent;
+    uint32      bonecontroller[6]<fgcolor=0xca4040>;// bone controller index, -1 == none
+	float		value[7];	// default DoF values			// f64: ~6
+	float		scale[7];   // scale for delta DoF values	// f64: ~6
+    Matrix      poseToBone<fgcolor=0x80c080>;
+    uint32		flags;
+	uint32		proctype;
+	uint32		procindex;		// procedural rule
+    uint32		physicsbone;
+    uint32		surfacepropidx;	// index into string tablefor property name
+    uint32		contents;		// See BSPFlags.h for the contents flags
+};
+
+struct MDLBoneCtr //mstudiobonecontroller_t
+{
+	int					bone;	// -1 == 0
+	int					type;	// X, Y, Z, XR, YR, ZR, M
+	float				start;
+	float				end;
+	int					rest;	// byte index value at rest
+	int					inputfield;	// 0-3 user set controller, 4 mouth
+	char				padding[32];	// future expansion.
+};
+
+struct MDLAnimDesc //mstudioanimdesc_t
+{
+	int					sznameindex;
+	float				fps;		// frames per second	
+	int					flags;		// looping/non-looping flags
+
+	int					numframes;
+
+	// piecewise movement
+	int					nummovements;
+	int					movementindex;
+	Vector				bbmin;		// per animation bounding box
+	Vector				bbmax;		
+	int	animindex;		// mstudioanim_t pointer relative to start of mstudioanimdesc_t data
+						// [bone][X, Y, Z, XR, YR, ZR]
+	int					numikrules;
+	int					ikruleindex;
+	int					hz[3];	// f64: ~unused[8]
+};
+
+//Unfinished
+struct MDLSeqDesc//mstudioseqdesc_t  sequence descriptions
+{
+	int					szlabelindex;
+	int					szactivitynameindex;
+	int					flags;		// looping/non-looping flags
+	int					activity;	// initialized at loadtime to game DLL values
+	int					actweight;
+	int					numevents;
+	int					eventindex;
+	Vector				bbmin;		// per sequence bounding box
+	Vector				bbmax;		
+	int					numblends;
+	//short				anim[MAXSTUDIOBLENDS][MAXSTUDIOBLENDS];	// f64: 16x16x2 = 512 bytes each anim a short
+    short               anim[256];
+	int					movementindex;	// [blend] float array for blended movement
+	int					groupsize[2];
+	int					paramindex[2];	// X, Y, Z, XR, YR, ZR
+	float				paramstart[2];	// local (0..1) starting value
+	float				paramend[2];	// local (0..1) ending value
+	int					paramparent;
+
+	int					seqgroup;		// sequence group for demand loading
+
+	float				fadeintime;		// ideal cross fate in time (0.2 default)
+	float				fadeouttime;	// ideal cross fade out time (0.2 default)
+
+	float				entrynode;	// f64: ~int, FIXME: this is a placeholder not transition node at entry
+	int					exitnode;		// transition node at exit
+	int					nodeflags;		// transition rules
+
+	float				entryphase;		// used to match entry gait
+	float				exitphase;		// used to match exit gait
+	
+	float				lastframe;		// frame that should generation EndOfSequence
+
+	int					nextseq;		// auto advancing sequences
+	int					pose;			// index of delta animation between end and nextseq
+
+	int					numikrules;
+
+	int					numautolayers;	//
+	int					autolayerindex;
+
+	int					weightlistindex;
+	float				pBoneweight;
+	float				weight;
+
+	int					posekeyindex;
+	float				pPoseKey;
+	float				poseKey;
+
+	//Vector				bbmin2;		// f64: +
+	//Vector				bbmax2;		// f64: +
+
+	int					numiklocks;
+	int					iklockindex;
+
+	// Key values
+	int					keyvalueindex;
+	int					keyvaluesize;
+    
+	int unkindex1;	// f64: +
+
+	unsigned int unkunsigned1;	// f64: +
+	unsigned int unkunsigned2;	// f64: +
+    uint32 unk_fill[2];    
+
+	int unkint[7];		// f64: +
+	float unkfloat[3];	// f64: +
+};
+
+
+struct MDLMaterial //mstudiotexture_t
+{
+    uint32 sznameindex<fgcolor=0x10a080>;
+    uint32 flags;
+    float width;
+    float height;
+    float unk;
+};
+
+struct MDLTextureDir
+{
+    uint32 sznameindex;
+};
+
+struct MDLSkinRef
+{
+    short unk_00;
+};
+
+struct MDLAttachment//mstudioattachment_t
+{
+	int					sznameindex;
+	int					type;
+	int					bone;
+	Matrix			local_0; // attachment point
+};
+
+
+struct MDLHitbox // mstudiobbox_t
+{
+	uint32				bone;
+	uint32			    group;			// intersection group
+	Vector				bbmin;		// bounding box
+	Vector				bbmax;		
+};
+
+struct MDLHitboxSet
+{
+	uint32					sznameindex;
+	uint32					numhitboxes;				// intersection group
+    uint32                 hitboxindex;    
+};
+
+// body part index
+struct MDLBodyParts //mstudiobodyparts_t
+{
+	int					sznameindex;
+	int					nummodels;
+	int					base;
+	int					modelindex; // index into models array
+};
+
+
+struct MDLFlexDesc//mstudioflexdesc_t
+{
+	int					szFACSindex;
+};
+
+struct MDLFlexCtr//mstudioflexcontroller_t
+{
+	int					sztypeindex;
+	int					sznameindex;
+	int			        link;	// remapped at load time to master list
+	float				min;
+	float				max;
+};
+
+struct MDLFlexRule//mstudioflexrule_t
+{
+	int					flex;
+	int					numops;
+	int					opindex;
+};
+
+struct MDLIKChain//mstudioikchain_t
+{
+	int				sznameindex;
+	int				linktype;
+	int				numlinks;
+	int				linkindex;
+
+};
+
+struct MDLMouth//mstudiomouth_t
+{
+	int					bone;
+	Vector				forward;
+	int					flexdesc;
+};
+
+
+struct MDLPoseParamDesc //mstudioposeparamdesc_t
+{
+	int					sznameindex;
+	int					flags;	// ????
+	float				start;	// starting value
+	float				end;	// ending value
+	float				loop;	// looping range, 0 for no looping, 360 for rotations, etc.
+};
+
+struct MDLUnk//mstudiounk_t		// f64: +
+{
+	int					dummy1;
+	int					dummy2;
+	int					dummy3;
+	int					dummy4;
+	int					dummy5;
+	int					dummy6;
+	int					dummy7;
+};
+
+struct MDLModelGroup //mstudiomodelgroup_t
+{
+	int					szlabelindex;
+	int					unk;
+	int					unk2;
+	int					unknum;
+	int					unkindex;
+	int					minone[24];
+};
+
+
+struct MDLHeader //studiohdr_t
+{
+    char        id[4];             // Model format ID, such as "IDST" (0x49 0x44 0x53 0x54)
+    int         version;        // Format version number, such as 48 (0x30,0x00,0x00,0x00)
+    uint        checksum;       // This has to be the same in the phy and vtx files to load!
+    char        name[128];       // The internal name of the model, padding with null bytes.
+                                // Typically "my_model.mdl" will have an internal name of "my_model"
+    int         dataLength;     // Data size of MDL file in bytes.
+ 
+    // A vector is 12 bytes, three 4-byte float-values in a row.
+    Vector      eyeposition;    // Position of player viewpoint relative to model origin
+    Vector      illumposition;  // Position (relative to model origin) used to calculate ambient light contribution and cubemap reflections for the entire model.
+    Vector      unk_float_00;       // Corner of model hull box with the least X/Y/Z values
+    Vector      bbmin;        // Opposite corner of model hull box
+    Vector      bbmax;     // TODO: what's this, how is it different from hull_min/max?
+    uint32      unk_nulls[6];
+ 
+    uint32         flags;          // Binary flags in little-endian order. 
+                                // ex (00000001,00000000,00000000,11000000) means flags for position 0, 30, and 31 are set. 
+                                // Set model flags section for more information
+ 
+    /*
+     * After this point, the header contains many references to offsets
+     * within the MDL file and the number of items at those offsets.
+     *
+     * Offsets are from the very beginning of the file.
+     * 
+     * Note that indexes/counts are not always paired and ordered consistently.
+     */    
+    float unk_f[2];
+    // mstudiobone_t
+    int        bone_count<fgcolor=0x20a030>;    // Number of data sections (of type mstudiobone_t)
+    int        bone_offset;   // Offset of first data section
+    // mstudiobonecontroller_t
+    int        bonecontroller_count;// numberOfAnimsOffset
+    int        bonecontroller_offset; 
+    // mstudiohitboxset_t
+    int        hitbox_count;//hitBoxDescOffsetOffset = 260
+    int        hitbox_offset;
+ 
+    // mstudioanimdesc_t
+    int        localanim_count<fgcolor=0x5520a0>;// numberOfAnimsOffset
+    int        localanim_offset; //animDescOffsetOffset 
+    
+    // mstudioseqdesc_t
+    int        localseq_count<fgcolor=0xa52040>; //numberOfSequencesOffset 
+    int        localseq_offset;
+    
+    int        sequencesindexed;// initialization flag - have the sequences been indexed?
+    int        numseqgroups;    // demand loaded sequences
+    int        seqgroupindex;
+ 
+    // VMT texture filenames
+    // mstudiotexture_t
+    int        texture_count<fgcolor=0x5520a0>; //numberOfMaterials
+    int        texture_offset; //materialDescOffsetOffset
+    
+    // This offset points to a series of ints.
+    // Each int value, in turn, is an offset relative to the start of this header/the-file,
+    // At which there is a null-terminated string.
+    //Offset to the block that contains an offset to the sting with a path to the texures
+    int        texturedir_count; //numcdtextures raw textures search paths
+    int        texturedir_offset;//cdtextureindex 
+    // Each skin-family assigns a texture-id to a skin location
+    int        skinreference_count; //numskinref replaceable textures tables
+    int        skinrfamily_count;
+    int        skinreference_index;
+     
+    // mstudiobodyparts_t
+    int        bodypart_count;//numberOfModelsOffset
+    int        bodypart_offset;
+ 
+    // Local attachment points        
+    // mstudioattachment_t
+    int        attachment_count; //numattachments queryable attachable points
+    int        attachment_offset;
+    
+    // Node values appear to be single bytes, while their names are null-terminated strings.
+    int        transition_count; //numtransitions  animation node to animation node transition graph
+    int        transition_index;
+    
+    // mstudioflexdesc_t
+    int        flexdesc_count;//numflexdesc; 344
+    int        flexdesc_index;
+ 
+    // mstudioflexcontroller_t
+    int        flexcontroller_count; //numflexcontrollers 352 
+    int        flexcontroller_index;
+    
+    // mstudioflexrule_t
+    int        flexrules_count;
+    int        flexrules_index;
+    
+    // IK probably referse to inverse kinematics
+    // mstudioikchain_t
+    int        ikchain_count;
+    int        ikchain_index;
+ 
+    // Information about any "mouth" on the model for speech animation
+    // More than one sounds pretty creepy.
+    // mstudiomouth_t
+    int        mouths_count; 
+    int        mouths_index;
+ 
+    // mstudioposeparamdesc_t
+    int        localposeparam_count;
+    int        localposeparam_index;
+ 
+    
+    //For anyone trying to follow along, as of this writing,
+    //the next "surfaceprop_index" value is at position 0x0134 (308)
+    //from the start of the file.
+    // Surface property value (single null-terminated string)
+    int        surfaceprop_index;// offset to a string
+    
+    // Unusual: In this one index comes first, then count.
+    // Key-value data is a series of strings. If you can't find
+    // what you're interested in, check the associated PHY file as well.
+    int        keyvalue_count; //numunk;
+    int        keyvalue_index;    
+    
+    // mstudiomodelgroup_t external animations, models, etc. 
+    int        includemodel_count<fgcolor=0x808000>;//numberOfIncludeModelsOffset = 404;
+    int        includemodel_index;
+    int		   unhz[3];
+};
+
+MDLHeader mdl<fgcolor=0xa5aa40>;
+
+if(mdl.bone_count>0)
+{    
+    FSeek(mdl.bone_offset);
+    MDLBone bones[mdl.bone_count];
+};
+
+if(mdl.bonecontroller_count>0)
+{
+    FSeek(mdl.bonecontroller_index);
+    MDLBoneCtr bonecontrollers[mdl.bone_count];
+};
+
+if(mdl.hitbox_count>0)
+{
+FSeek(mdl.hitbox_offset);
+    MDLHitboxSet hitset[mdl.hitbox_count]<fgcolor=0x101080>;
+    MDLHitbox hitboxes[hitset.numhitboxes]<fgcolor=0x109080>;
+};
+
+
+if(mdl.localanim_count>0)
+{
+    FSeek(mdl.localanim_offset);
+    MDLAnimDesc anim_description[mdl.localanim_count]<fgcolor=0x805080>;
+}
+
+if(mdl.localseq_count>0)
+{
+    FSeek(mdl.localseq_offset);
+    MDLSeqDesc seq_desc[mdl.localseq_count]<fgcolor=0x80cc80>;
+};
+
+if(mdl.texture_count>0)
+{
+    FSeek(mdl.texture_offset);
+    MDLMaterial materials[mdl.texture_count]<fgcolor=0xc05080>;
+};
+
+if(mdl.texturedir_count>0)
+{
+    FSeek(mdl.texturedir_offset);
+    MDLTextureDir texture_dir[mdl.texturedir_count]<fgcolor=0x200cc0>;
+};
+
+if(mdl.skinreference_count>0)
+{
+    FSeek(mdl.skinreference_index);
+    struct
+    {
+        ushort skin[mdl.skinreference_count];
+    }skin_ref_table;
+};
+
+if(mdl.bodypart_count>0)
+{
+    FSeek(mdl.bodypart_offset);
+    checkpoint = FTell();
+    MDLBodyParts body_parts[mdl.bodypart_count]<fgcolor=0xc0c040>;
+};
+
+if(mdl.attachment_count)
+{
+    FSeek(mdl.attachment_offset);
+    MDLAttachment attachments[mdl.attachment_count]<fgcolor=0xc07040>;
+};
+
+
+if(mdl.transition_count>0)
+{
+    FSeek(mdl.transition_index);
+    ubyte val[mdl.transition_count];
+};
+
+if(mdl.flexdesc_count>0)
+{
+    FSeek(mdl.flexdesc_index);
+    MDLFlexDesc flex_desc(mdl.flexdesc_count);
+};
+
+if(mdl.flexcontroller_count>0)
+{
+    FSeek(mdl.flexcontroller_index);
+    MDLFlexCtr flex_controllers(mdl.flexcontroller_index);
+};
+
+if(mdl.flexrules_count>0)
+{
+    FSeek(mdl.flexrules_count);
+    MDLFlexRule flex_rules(mdl.flexrules_count);
+};
+
+if(mdl.ikchain_count>0)
+{
+    FSeek(mdl.ikchain_index);
+    MDLIKChain ik_chain(mdl.ikchain_count);
+};
+
+if(mdl.mouths_count>0)
+{
+    FSeek(mdl.mouths_index);
+    MDLMouth mouth(mdl.mouths_count);
+};
+
+FSeek(mdl.localposeparam_index);
+MDLPoseParamDesc pose_param_desk;
+
+if(mdl.keyvalue_count>0)
+{
+    FSeek(mdl.keyvalue_index);
+    MDLUnk mdl_unk[mdl.keyvalue_count]<fgcolor=0xc02080>;
+};
+
+if(mdl.includemodel_count>0)
+{
+FSeek(mdl.includemodel_index);
+MDLModelGroup model_group[mdl.includemodel_count]<fgcolor=0x2080c0>;
+};
