@@ -11,11 +11,29 @@
 //   History: 
 //------------------------------------------------
 local uint64 checkpoint;
+local uint64 savepoint;
+local uint64 i;
+local uint64 j;
+
 struct Vector
 {
     float x;
     float y;
     float z;
+};
+
+struct Vector4d
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct Vector2d
+{
+    float x;
+    float y;
 };
 
 struct Vertex
@@ -142,11 +160,10 @@ struct MDLSeqDesc//mstudioseqdesc_t  sequence descriptions
 	int					keyvaluesize;
     
 	int unkindex1;	// f64: +
-
+    
+    uint32 unk_fill[2]; 
 	unsigned int unkunsigned1;	// f64: +
 	unsigned int unkunsigned2;	// f64: +
-    uint32 unk_fill[2];    
-
 	int unkint[7];		// f64: +
 	float unkfloat[3];	// f64: +
 };
@@ -190,9 +207,9 @@ struct MDLHitbox // mstudiobbox_t
 
 struct MDLHitboxSet
 {
-	uint32					sznameindex;
-	uint32					numhitboxes;				// intersection group
-    uint32                 hitboxindex;    
+	uint32				sznameindex;
+	uint32				numhitboxes;				// intersection group
+    uint32              hitboxindex;    
 };
 
 // body part index
@@ -204,6 +221,81 @@ struct MDLBodyParts //mstudiobodyparts_t
 	int					modelindex; // index into models array
 };
 
+struct MDLModel //mstudiomodel_t  264 bytes
+{
+    char                name[128];
+    int                 type;
+    float   			boundingradius;
+	int					nummeshes;	
+	int					meshindex;
+	// cache purposes
+	int					numvertices;		// number of unique vertices/normals/texcoords
+	int					vertex_ofs;		//face indexes?
+	int					tangentsindex;		// tangents Vector
+	int					filetype;	// f64: for type vertex
+	float				unkvect[6];
+	int					unk[2];
+	int					unknum;
+	int					unkindex;
+	int					unknum_00;
+	int					unkindex_00;
+// ----
+	int					numattachments;
+	int					attachmentindex;
+
+	int					numeyeballs;
+	int					eyeballindex;
+	int					unkindex_01;
+	int					nknum_01;
+    int					unk_00[8];		// remove as appropriate	// f64: -
+
+};
+
+struct MDLMesh //  mstudiomesh_t 60 bytes
+{
+    int					material;
+    int					modelindex;
+	int					numvertices;		// number of unique vertices/normals/texcoords
+	int					vertexoffset;		// vertex mstudiovertex_t
+	int					numflexes;			// vertex animation
+	int					flexindex;
+	// special codes for material operations
+	int					materialtype;
+	int					materialparam;
+	// a unique ordinal for this mesh
+	int					meshid;
+	Vector 				center;
+    int                 unused[3];
+};
+
+struct MDLMeshUnk
+{
+    uint unk_01;
+    uint unk_02;
+};
+
+
+struct MDLBoneWeight//mstudioboneweight_t	// f64: ~
+{
+	byte	preweight[3];
+	short	bone[3];
+
+// 	float	weight[4];
+// 	short	bone[4]; 
+// 	short	numbones;
+// 	short	material;
+// 	short	firstref;
+// 	short	lastref;
+};
+
+
+struct MDLVtx //mstudiovertex_t // NOTE: This is exactly 64 bytes, two cache lines
+{
+	MDLBoneWeight	    m_BoneWeights;
+	Vector		        m_vecPosition;
+	Vector		        m_vecNormal;
+	Vector2d	        m_vecTexCoord;
+};
 
 struct MDLFlexDesc//mstudioflexdesc_t
 {
@@ -228,10 +320,10 @@ struct MDLFlexRule//mstudioflexrule_t
 
 struct MDLIKChain//mstudioikchain_t
 {
-	int				sznameindex;
-	int				linktype;
-	int				numlinks;
-	int				linkindex;
+	int				    sznameindex;
+	int			        linktype;
+	int				    numlinks;
+	int				    linkindex;
 
 };
 
@@ -272,6 +364,8 @@ struct MDLModelGroup //mstudiomodelgroup_t
 	int					unkindex;
 	int					minone[24];
 };
+
+
 
 
 struct MDLHeader //studiohdr_t
@@ -455,12 +549,29 @@ if(mdl.skinreference_count>0)
         ushort skin[mdl.skinreference_count];
     }skin_ref_table;
 };
-
+//Meshes
 if(mdl.bodypart_count>0)
 {
     FSeek(mdl.bodypart_offset);
     checkpoint = FTell();
     MDLBodyParts body_parts[mdl.bodypart_count]<fgcolor=0xc0c040>;
+    FSeek(checkpoint+body_parts.modelindex);
+    checkpoint = FTell();
+    MDLModel model<fgcolor=0x9080c0>;
+    FSeek(checkpoint + model.meshindex);
+    savepoint=FTell();
+    for(i=0; i<model.nummeshes; i++)
+        {
+            FSeek(savepoint);
+            MDLMesh mesh<fgcolor=0x908050>;
+            savepoint=FTell();
+            FSeek(checkpoint + model.vertex_ofs + mesh[i].vertexoffset);
+            //for(j=0; j<mesh.numvertices; j++)
+            //    {
+            //        MDLMeshUnk unk_block<fgcolor=0x90F050>;    
+            //    };
+        };
+
 };
 
 if(mdl.attachment_count)
