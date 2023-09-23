@@ -1,0 +1,158 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: 
+//   Authors: adapted from Monster Hunter World templates
+//   Version: 0.1
+//   Purpose: parsing mtframework 2.0 mfx shader file
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+local int i;
+local int j;
+typedef struct{
+    byte MFX0[4];
+    short reserved_4;
+    short reserved_6;
+    int field_8;
+    int entryCount;
+    int stringTableOffset;
+    int field_14;
+}MFXHeader;
+
+struct MFXEntryOffsets{
+    uint offset[Header.entryCount]<fgcolor=cBlue>;
+};
+struct MFXStringTable{
+    string entryName;
+};
+typedef struct{
+    string name;
+}Name;
+
+typedef struct{
+    uint strOffset;
+    uint u1 : 6;
+    uint comp_type : 5;
+    uint comp_count : 11;
+    uint base_off : 9;
+    uint instancing : 1;
+    //uint null;
+    returnAdd = FTell();
+    FSeek(Header.stringTableOffset+strOffset);
+    Name name<optimize=false>;
+    FSeek(returnAdd);
+}Attribute;
+
+string readAttribute(Attribute &a){
+    return a.name.name;
+};
+
+typedef struct {
+    uint strOffset;
+    local uint checkpoint = FTell();
+    FSeek(Header.stringTableOffset + strOffset);
+    string unk_name;
+    FSeek(checkpoint);
+    uint32 unk_00;
+    uint base_off : 4;
+    uint instancing : 4;
+    uint u1 : 8;
+    uint count : 8;
+    uint comp_count : 8;
+    ushort unk_01;
+    ushort unk_02;
+    uint32 unk_03;
+    uint32 unk_ofs_00;
+    uint32 unk_ofs_01;
+    if(unk_ofs_01>0)
+    {
+        checkpoint = FTell();
+        FSeek(unk_ofs_01);
+        uint32 unk_val<bgcolor=0xa05080>;
+        FSeek(checkpoint);
+    };
+}TestAttr1;
+
+
+typedef struct {
+    uint strOffset;
+    local uint checkpoint = FTell();
+    FSeek(Header.stringTableOffset + strOffset);
+    string unk_name;
+    FSeek(checkpoint);
+    short unk_00[2];
+    uint base_off : 4;
+    uint count : 4;
+    uint instances : 8;
+    uint unk_bit_01 : 8;
+    uint comp_count : 8;
+    ushort unk_01;
+    ushort unk_02;
+    //uint32 unk_03;
+    ubyte unk_b00;
+    ubyte float_buff_ofs;
+    ubyte unk_b01;
+    ubyte unk_num;
+    uint32 unk_ofs_00;
+    uint32 unk_ofs_01;
+    if(unk_ofs_00>0)
+    {
+       checkpoint = FTell();
+       FSeek(unk_ofs_00);
+       TestAttr1 unk_block[unk_num]<optimize=false, bgcolor=0x758010>; 
+       FSeek(checkpoint);
+    };
+}TestAttr;
+
+struct MFXEntry{
+    uint string1;
+    uint string2;
+    local uint returnAdd = FTell();
+    FSeek(Header.stringTableOffset+string1);
+    string name1;
+    FSeek(Header.stringTableOffset+string2);
+    string name2;
+    FSeek(returnAdd);
+    uint field_8_a : 6;
+    uint field_8_b : 16;
+    ushort unknShort;
+    ushort index;
+    uint unk_ff;
+    uint unk_null;
+    ubyte attributeCount;
+    ubyte unk_00;
+    ushort unk_block_num; // byte size for struct for field_8_a == 9
+    //uint unk_ofs;
+    if(field_8_a == 9){
+        uint unkn;
+        //uint unkn8;
+        Attribute attribute[attributeCount]<read=readAttribute,optimize=false, bgcolor=0x5040a0>;
+    };
+    //if(index == 350){
+    if(field_8_a == 0){
+        uint32 unk_ofs;
+        uint32 ofs_blocks;
+        uint32 floats_ofs<bgcolor=0x2c45a5>;
+        TestAttr parameters[unk_block_num]<optimize=false, bgcolor=0xa04555>;
+        //FSeek(floats_ofs);
+        //float unk_block[attributeCount]<bgcolor=0xa045a5>;
+    };
+    
+};
+
+string readStrings(MFXEntry &p){
+    string s;
+    SPrintf( s, "%s, %s", (string)p.name1,(string)p.name2);
+    return s;
+}
+
+MFXHeader Header;
+//FSkip(8);
+MFXEntryOffsets EntryOffsets;
+for(i=0;i<Header.entryCount;i++){
+    FSeek(EntryOffsets.offset[i]);
+    MFXEntry Entry<read=readStrings, bgcolor=0x509050>;
+};

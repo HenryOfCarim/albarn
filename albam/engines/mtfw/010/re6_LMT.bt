@@ -1,0 +1,122 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: re5_LMT.bt
+//   Authors: HenryVIII
+//   Version: 0.3
+//   Purpose: Parsing Resident evil 5 animation format
+//  Category: Modding
+// File Mask: lmt
+//  ID Bytes: 4C 4D 54 00
+//   History: 
+//------------------------------------------------
+local uint64 i<hidden=true>;
+local uint64 j<hidden=true>;
+local int64 savepos <hidden=true>;
+
+struct LMTHeader
+{
+    char id_magic[4];
+    ushort version; //67 for 211
+    ushort num_blocks;
+    uint block_offsets[num_blocks]; //there is 0 fill after
+};
+
+struct SFX
+{
+    uint16 sfx_id;
+};
+
+struct Track //LMTAniBlockHeader
+{
+    uint ofs_frame; //Offset
+    uint num_bones; //BoneCount
+    uint num_frames; //FrameCount
+    uint loop_frame; //LoopFrame (one uint)
+    float unk_01[8]; 
+    //uint unk_02[16]; 
+    uint16 unk_00;
+    uint16 count_01;
+    uint ofs_buffer_01;
+    uint ofs_buffer_02;
+};
+
+struct FrameData
+{
+    ubyte buffer_type;//BufferType
+    ubyte usage;//Usage
+    ubyte joint_type;//JoinType
+    ubyte bone_index;//boneID
+    float weight;// weight ?
+    uint buffer_size;//BufferSize
+    uint buffer_offset;//BufferOffset
+    float unk_reference_data[4];//BufferRef
+    uint unk_ofs;
+};
+
+struct UnkFrameBlock
+{
+    float unk_00[8];
+};
+
+struct UnkTrackBlock
+{
+    uint32 unk_00[80];
+};
+
+
+LMTHeader lmt_header<fgcolor=cYellow>;
+struct
+{
+    for (i=0; i<lmt_header.num_blocks; i++)
+    {
+            if (lmt_header.block_offsets[i] > 0)
+            {
+                FSeek(lmt_header.block_offsets[i]);
+                struct
+                {
+                    Track track<fgcolor=0xabbb82>;
+                    //savepos = FTell();
+                    struct
+                    {
+                        FSeek(track.ofs_frame);
+                        savepos = 0;
+                        for(j=0; j<track.num_bones; j++)
+                        {
+                            if (savepos>0)
+                            {
+                                FSeek(savepos);    
+                            };
+                            FrameData frame_data<fgcolor=cGreen>;
+                            
+                            savepos = FTell();
+                            if(frame_data.buffer_size>0)
+                            {
+                                FSeek(frame_data.buffer_offset);
+                                struct
+                                {
+                                    ubyte data[frame_data.buffer_size];
+                                }frame_data_body<fgcolor=cRed>;
+                            };
+                            if(frame_data.unk_ofs>0)
+                            {
+                                FSeek(frame_data.unk_ofs);
+                                UnkFrameBlock test<bgcolor=0x20ac40>;
+                            };
+                        };
+                    }frames;
+                    
+                    if (track.ofs_buffer_01>0)
+                    {
+                        FSeek(track.ofs_buffer_01);
+                        UnkTrackBlock test<bgcolor=0x4570ca>;
+                        //Atk atk_hit[track.count_01]<fgcolor=0x577806>;
+                        //FSeek(track.ofs_buffer_02);
+                        //Atk2 atk_sfx[track.count_02]<fgcolor=0x977806>;
+                        //uint32 test;
+                    };  
+                          
+                }anim_block;
+            };
+    };
+}anim_blocks;
