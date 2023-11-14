@@ -3,23 +3,47 @@
 //
 //      File: re5_LMT.bt
 //   Authors: HenryVIII
-//   Version: 0.3
+//   Version: 0.4
 //   Purpose: Parsing Resident evil 5 animation format
 //  Category: Modding
 // File Mask: lmt
 //  ID Bytes: 4C 4D 54 00
 //   History: 
 //------------------------------------------------
-local uint64 i<hidden=true>;
-local uint64 j<hidden=true>;
-local int64 savepos <hidden=true>;
 
-struct LMTHeader
+struct FrameData
 {
-    char id_magic[4];
-    ushort version;
-    ushort num_blocks;
-    uint block_offsets[num_blocks]; //there is 0 fill after
+    ubyte    buffer_type;//BufferType
+    ubyte    usage;//Usage
+    ubyte    joint_type;//JoinType
+    ubyte    bone_index;//boneID
+    float    unk_01;// weight ?
+    uint     buffer_size;//BufferSize
+    uint     buffer_offset;//BufferOffset
+    float    unk_reference_data[4];//BufferRef
+    local int64 checkpoint = FTell();
+    if(buffer_size>0)
+    {
+        FSeek(buffer_offset);
+        struct
+        {
+            ubyte   data[buffer_size];
+        }frame_data_body<fgcolor=cRed>;
+    };
+    FSeek(checkpoint);
+    
+};
+
+struct Attack
+{
+    uint unk_00;
+    uint start_time;
+};
+
+struct AttackSFX
+{
+    uint sfx_id;
+    uint start_time;
 };
 
 struct SFX
@@ -27,88 +51,60 @@ struct SFX
     uint16 sfx_id;
 };
 
+
 struct Track
 {
-    uint ofs_frame; //Offset
-    uint num_bones; //BoneCount
-    uint num_frames; //FrameCount
-    float unk_01[9]; //LoopFrame (one uint)
-    uint unk_02[16]; 
-    uint count_01;
-    uint ofs_buffer_01;
+    uint     ofs_frame; //Offset
+    uint     num_bones; //BoneCount
+    uint     num_frames; //FrameCount
+    float    unk_01[9]; //LoopFrame (one uint)
+    uint     unk_02[16]; 
+    uint     count_01;
+    uint     ofs_buffer_01;
     //uint16 unk_02[6];
-    SFX sfx[32];
+    SFX      sfx[32]<fgcolor=0xa77856>;
     //uint16 unk_03[24];
-    uint count_02;
-    uint ofs_buffer_02;
+    uint     count_02;
+    uint     ofs_buffer_02;
+    local uint64 savepos = FTell();
+    if (ofs_buffer_01>0)
+    {
+        FSeek(ofs_buffer_01);
+        Attack   atk_hit[count_01]<fgcolor=0x577806>;
+    };
+    if (ofs_buffer_02>0)
+    {
+        FSeek(ofs_buffer_02);
+        AttackSFX    atk_sfx[count_02]<fgcolor=0x977806>;
+    }   
+    FSeek(savepos);
+    struct
+    {
+        FSeek(ofs_frame);
+        FrameData   frame_data[num_bones]<optimize=false,fgcolor=cGreen>;
+    }frames;
+    FSeek(savepos);
 };
 
-struct FrameData
+typedef struct
 {
-    ubyte buffer_type;//BufferType
-    ubyte usage;//Usage
-    ubyte joint_type;//JoinType
-    ubyte bone_index;//boneID
-    float unk_01;// weight ?
-    uint buffer_size;//BufferSize
-    uint buffer_offset;//BufferOffset
-    float unk_reference_data[4];//BufferRef
-};
+    uint offset<fgcolor=0x855080>;
+    if (offset > 0)
+    {
+        local uint64 checkpoint = FTell();
+        FSeek(offset);
+        Track    track<fgcolor=0xabbb82>;
+        FSeek(checkpoint);
+    };
+}AnimBlock;
 
-struct Atk
+struct LMTHeader
 {
-    uint unk_00;
-    uint duration;
-};
-
-struct Atk2
-{
-    uint unk_00[2];
+    char     id_magic[4];
+    ushort   version;
+    ushort   num_blocks;
 };
 
 
 LMTHeader lmt_header<fgcolor=cYellow>;
-struct
-{
-    for (i=0; i<lmt_header.num_blocks; i++)
-    {
-            if (lmt_header.block_offsets[i] > 0)
-            {
-                FSeek(lmt_header.block_offsets[i]);
-                struct
-                {
-                    Track track<fgcolor=0xabbb82>;
-                    //savepos = FTell();
-                    struct
-                    {
-                        FSeek(track.ofs_frame);
-                        savepos = 0;
-                        for(j=0; j<track.num_bones; j++)
-                        {
-                            if (savepos>0)
-                            {
-                                FSeek(savepos);    
-                            };
-                            FrameData frame_data<fgcolor=cGreen>;
-                            savepos = FTell();
-                            if(frame_data.buffer_size>0)
-                            {
-                                FSeek(frame_data.buffer_offset);
-                                struct
-                                {
-                                    ubyte data[frame_data.buffer_size];
-                                }frame_data_body<fgcolor=cRed>;
-                            };
-                        };
-                    }frames;
-                    if (track.ofs_buffer_01>0)
-                    {
-                        FSeek(track.ofs_buffer_01);
-                        Atk atk_hit[track.count_01]<fgcolor=0x577806>;
-                        FSeek(track.ofs_buffer_02);
-                        Atk2 atk_sfx[track.count_02]<fgcolor=0x977806>;
-                    };      
-                }anim_block;
-            };
-    };
-}anim_blocks;
+AnimBlock anim_block[lmt_header.num_blocks]<optimize=false>;

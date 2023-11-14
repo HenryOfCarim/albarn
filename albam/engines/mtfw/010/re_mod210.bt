@@ -1,0 +1,684 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: HenryVIII
+//   Version: 0.1
+//   Purpose: Parsing Resident evil mod 210 mesh format
+//  Category: Modding
+// File Mask: .mod
+//  ID Bytes: 4D 4F 44 00 D2
+//   History: 
+//------------------------------------------------
+
+struct MODHeader
+{
+    char id_magic[4];
+    ubyte version;
+    ubyte revision;
+    ushort num_bones;
+    short num_meshes;
+    ushort num_materials_names;
+    uint num_vertices;
+    uint num_faces;
+    uint num_edges;
+    uint size_vertex_buffer;
+    uint reversed;
+    uint num_groups;
+    uint offset_bones;
+    uint offset_groups;
+    uint offset_material;
+    uint offset_meshes;
+    uint offset_buffer_vertices;
+    uint offset_buffer_indices;
+    uint size_file;
+    float sphere_x;
+    float sphere_y;
+    float sphere_z;
+    float sphere_w;
+    float box_min_x;
+    float box_min_y;
+    float box_min_z;
+    float box_min_w;
+    float box_max_x;
+    float box_max_y;
+    float box_max_z;
+    float box_max_w;
+    uint unk_01;
+    uint unk_02;
+    uint unk_03;
+    uint unk_04;
+    uint num_weight_bounds_210;
+};
+
+struct Bone
+{
+	ubyte idx_anim_map;
+	ubyte idx_parent; //255: root
+	ubyte idx_mirror;
+	ubyte idx_mapping;
+	float unk_01;
+	float parent_distance;
+	float location_x;
+	float location_y;
+	float location_z;
+};
+
+struct Matrix4x4
+{
+    float matrix[16];
+};
+
+struct BoneAnimMapping
+{
+	ubyte a[256];
+} ;
+
+struct  Group
+{
+    uint group_index;
+    float unk_02;
+    float unk_03;
+    float unk_04;
+    float unk_05;
+    float unk_06;
+    float unk_07;
+    float unk_08;
+};
+
+typedef struct {
+    char string_name[128];
+} MaterialName;
+
+struct Vector2HF
+{
+    hfloat u;
+    hfloat v;
+};
+
+struct Vector3
+{
+    float x;
+    float y;
+    float z;
+};
+
+
+struct Vector3U1
+{
+    ubyte x;
+    ubyte y;
+    ubyte z;
+};
+
+struct Vector3S2
+{
+    ushort x;
+    ushort y;
+    ushort z;
+};
+
+struct Vector4U1
+{
+    ubyte x;
+    ubyte y;
+    ubyte z;
+    ubyte w;
+};
+
+struct Vector4S2
+{
+    ushort x;
+    ushort y;
+    ushort z;
+    ushort w;
+};
+
+// static
+
+struct IANonSkinTB
+{
+    Vector3   position;
+    Vector4U1 normal;
+    Vector4U1 tangent;
+    Vector2HF uv;
+};
+
+
+struct IANonSkinTBC
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector4U1 rgba;
+};
+
+struct IANonSkinTBL
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     vetex_alpha;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    uint      occlusion;
+};
+
+struct IANonSkinTBN
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+};
+
+struct IANonSkinTBA
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+};
+
+struct IANonSkinTBNC
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector4U1 rgba;
+};
+
+struct IANonSkinTBNL
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     vetex_alpha;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector2HF uv3;
+    uint      occlusion;
+};
+
+struct IANonSkinTBNA
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector2HF uv3;
+};
+
+struct IANonSkinTBLA
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector2HF uv3;
+};
+
+struct IANonSkinTBCA //?
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector4U1 rgba;
+};
+
+struct IANonSkinTBNCA
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector4U1 rgba;
+    Vector2HF uv3;
+};
+
+struct IANonSkinTBNLA
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector2HF uv3;
+    Vector2HF uv4;
+};
+
+struct IANonSkinB
+{
+    Vector3   position;
+    Vector4U1 normal;
+    Vector2HF uv;
+};
+
+struct IANonSkinBC
+{
+    Vector3   position;
+    Vector4U1 normal;
+    Vector2HF uv;
+    Vector4U1 rgba;
+};
+
+struct IANonSkinBL
+{
+    Vector3   position;
+    Vector4U1 normal;
+    Vector2HF uv;
+    Vector2HF uv2;
+};
+
+struct IANonSkinBA
+{
+    Vector3   position;
+    Vector4U1 normal;
+    Vector2HF uv;
+    Vector2HF uv2;
+};
+
+struct IANonSkinBLA
+{
+    Vector3   position;
+    Vector4U1 normal;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector2HF uv3;
+};
+
+struct IANonSkinBCA
+{
+    Vector3   position;
+    Vector4U1 normal;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector4U1 rgba;
+};
+
+struct IANonSkinTBN_4M
+{
+    Vector3   position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector3S2 morph_position;
+    Vector3S2 morph_position2;
+    Vector3S2 morph_position3;
+    Vector3S2 morph_position4;
+    Vector3U1 morph_normal;
+    Vector3U1 morph_normal2;
+    Vector3U1 morph_normal3;
+    Vector3U1 morph_normal4;
+};
+
+// bridge "line" geometry
+struct IASkinBridge1wt
+{
+    Vector4S2 position;
+    ubyte     bone_indices[1];
+    Vector4U1 normal;
+};
+
+struct IASkinBridge2wt
+{
+    Vector4S2 position;
+    Vector4U1 normal;
+    ubyte     bone_indices[4]; 
+};
+
+struct IASkinBridge4wt
+{
+    Vector4S2 position;
+    ubyte     bone_indices[4];
+    ubyte     weight_values[4]; 
+    Vector4U1 normal;
+};
+
+struct IASkinBridge8wt
+{
+    Vector4S2 position;
+    ubyte     bone_indices[8];
+    ubyte     weight_values[8]; 
+    Vector4U1 normal;
+};
+
+struct IASkinTB1wt
+{
+    Vector3S2 position;
+    ushort    bone_indices;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+};
+
+struct IASkinTBN1wt
+{
+    Vector3S2 position;
+    ushort    bone_indices;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+};
+
+struct  IASkinTBC1wt
+{
+    Vector3S2 position;
+    ushort    bone_indices;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector4U1 rgba;
+};
+
+struct IASkinTBNLA1wt
+{
+    Vector3S2 position;
+    ushort    bone_indices;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector2HF uv3;
+    Vector2HF uv4;
+};
+
+struct IASkinTB2wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    ushort bone_indices[2];
+};
+
+struct IASkinTBN2wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    ushort bone_indices[2];
+    Vector2HF uv;
+};
+
+struct IASkinTBC2wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    Vector2HF uv;
+    ushort    bone_indices[2];
+    Vector4U1 rgba;
+};
+
+struct IASkinTBNLA2wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 tangent;
+    ushort bone_indices[2];
+    Vector2HF uv;
+    Vector2HF uv2;
+    Vector2HF uv3;
+    Vector2HF uv4;
+};
+
+struct IASkinTB4wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte occlusion;
+    Vector4U1 tangent;
+    ubyte     bone_indices[4];
+    Vector2HF uv;
+    Vector2HF weight_values;
+};
+
+struct IASkinTBN4wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte occlusion;
+    Vector4U1 tangent;
+    ubyte     bone_indices[4];
+    Vector2HF uv;
+    Vector2HF weight_values;
+    Vector2HF uv2;
+};
+
+struct IASkinTBC4wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte occlusion;
+    Vector4U1 tangent;
+    ubyte     bone_indices[4];
+    Vector2HF uv;
+    Vector2HF weight_values;
+};
+
+struct IASkinTBNLA4wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte occlusion;
+    Vector4U1 tangent;
+    ubyte     bone_indices[4];
+    Vector2HF uv;
+    Vector2HF weight_values;
+    Vector2HF uv2;
+    Vector2HF uv3;
+    Vector2HF uv4;
+    Vector4U1 rgba;
+};
+
+struct IASkinOTB_4WT_4M
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte occlusion;
+    Vector4U1 tangent;
+    ubyte     bone_indices[4];
+    Vector2HF uv;
+    Vector2HF weight_values[2];
+    Vector3S2 morph_position;
+    Vector3S2 morph_position2;
+    Vector3S2 morph_position3;
+    Vector3S2 morph_position4;
+    Vector3U1 morph_normal;
+    Vector3U1 morph_normal2;
+    Vector3U1 morph_normal3;
+    Vector3U1 morph_normal4;
+};
+
+struct IASkinTB8wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 weight_values;
+    ubyte     bone_indices[8];
+    Vector2HF uv;
+    Vector2HF weight_values2[2];
+    Vector4U1 tangent;
+};
+
+struct IASkinTBN8wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 weight_values;
+    ubyte     bone_indices[8];
+    Vector2HF uv;
+    Vector2HF weight_values2[2];
+    Vector4U1 tangent;
+    Vector2HF uv2;
+};
+
+struct IASkinTBC8wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 weight_values;
+    ubyte     bone_indices[8];
+    Vector2HF uv;
+    Vector2HF weight_values2[2];
+    Vector4U1 tangent;
+    Vector4U1 rgba;
+};
+
+struct IASkinTBNLA8wt
+{
+    Vector4S2 position;
+    Vector3U1 normal;
+    ubyte     occlusion;
+    Vector4U1 weight_values;
+    ubyte     bone_indices[8];
+    Vector2HF uv;
+    Vector2HF weight_values2[2];
+    Vector4U1 tangent;
+    Vector2HF uv2;
+    Vector2HF uv3;
+    Vector2HF uv4;
+};
+
+typedef struct
+{
+    ushort idx_group;
+    ushort num_vertices;
+    ubyte  unk_01; //always 1
+    ushort idx_material;
+    ubyte level_of_detail;
+    ubyte type_mesh;
+    ubyte unk_class_mesh;
+    ubyte vertex_stride;
+    ubyte unk_render_mode;
+    uint vertex_position;
+    uint vertex_offset;
+    uint vertex_format;
+    uint face_position;
+    uint face_count;
+    uint face_offset;
+    ubyte bone_id_start;
+    ubyte num_unique_bone_ids;
+    ushort mesh_index;
+    ushort  min_index;
+    ushort  man_index;
+    float hash;
+    local uint checkpoint = FTell();
+        FSeek(header.offset_buffer_vertices + vertex_offset + (vertex_position * vertex_stride));
+    struct
+    {
+        switch(vertex_format) 
+        {
+            case 0xb0983013  : IASkinBridge1wt  bridge_1w[mesh.num_vertices]<fgcolor=0x656228>; break;
+            case 0xdb7da014  : IASkinBridge2wt  bridge_2w[mesh.num_vertices]<fgcolor=0x5f5925>; break;
+            case 0xcb68015   : IASkinBridge4wt  bridge_4w[mesh.num_vertices]<fgcolor=0x5a5123>; break;
+            case 0xa320c016  : IASkinBridge8wt  bridge_8w[mesh.num_vertices]<fgcolor=0x514422>; break;
+            case 0xd8297028  : IANonSkinTB      non_skin_tb[mesh.num_vertices]<fgcolor=0xb11f69>; break;
+            case 0x49b4f029  : IANonSkinTBC     non_skin_tbc[mesh.num_vertices]<fgcolor=0xbc3960>; break;
+            case 0xb86de02a  : IANonSkinTBL     non_skin_tbl[mesh.num_vertices]<fgcolor=0xc7635c>; break;
+            case 0x5e7f202c  : IANonSkinTBN     non_skin_tbn[mesh.num_vertices]<fgcolor=0xd3905f>; break;
+            case 0xafa6302d  : IANonSkinTBA     non_skin_tba[mesh.num_vertices]<fgcolor=0xd9a764>; break;
+            case 0x926fd02e  : IANonSkinTBNC    non_skin_tbnc[mesh.num_vertices]<fgcolor=0xdfbd68>; break;
+            case 0x12553032  : IANonSkinTBLA    non_skin_tbla[mesh.num_vertices]<fgcolor=0xdecd76>; break;
+            case 0x9399c033  : IANonSkinTBCA    non_skin_tbca[mesh.num_vertices]<fgcolor=0xdedc84>; break;
+            case 0xb6681034  : IANonSkinTBNCA   non_skin_tbnca[mesh.num_vertices]<fgcolor=0xddec92>; break;
+            case 0x37a4e035  : IANonSkinTBNLA   non_skin_tbnla[mesh.num_vertices]<fgcolor=0xddfca0>; break;
+            case 0xa7d7d036  : IANonSkinB       non_skin_b[mesh.num_vertices]<fgcolor=0x87a503>; break;
+            case 0x207d6037  : IANonSkinBC      non_skin_bc[mesh.num_vertices]<fgcolor=0x87a503>; break;
+            case 0xd1a47038  : IANonSkinBL      non_skin_bl[mesh.num_vertices]<fgcolor=0xa6cb03>; break;
+            case 0xc66fa03a  : IANonSkinBA      non_skin_ba[mesh.num_vertices]<fgcolor=0x5d7202>; break;
+            case 0x2082f03b  : IANonSkinBLA     non_skin_bla[mesh.num_vertices]<fgcolor=0x333f01>; break;
+            case 0xa14e003c  : IANonSkinBCA     non_skin_bca[mesh.num_vertices]<fgcolor=0x3c3f00>; break;
+            case 0x4325a03e  : IANonSkinTBN_4M  non_skin_tbn_4m[mesh.num_vertices]<fgcolor=0x4a4700>; break;
+            case 0xa8fab018  : IASkinTB1wt      skin_tb_1w[mesh.num_vertices]<fgcolor=0x19375e>; break;
+            case 0x667b1019  : IASkinTBN1wt     skin_tbn_1w[mesh.num_vertices]<fgcolor=0x385273>; break;
+            case 0xcbf6c01a  : IASkinTBC1wt     skin_tbc_1w[mesh.num_vertices]<fgcolor=0x586E88>; break;
+            case 0xd877801b  : IASkinTBNLA1wt   skin_tbnla_1w[mesh.num_vertices]<fgcolor=0x77899d>; break;
+            case 0xc31f201c  : IASkinTB2wt      skin_tb_2w[mesh.num_vertices]<fgcolor=0x086667>; break;
+            case 0xd9e801d   : IASkinTBN2wt     skin_tbn_2w[mesh.num_vertices]<fgcolor=0x136359>; break;
+            case 0xa013501e  : IASkinTBC2wt     skin_tbc_2w[mesh.num_vertices]<fgcolor=0x1d5f4a>; break;
+            case 0xb392101f  : IASkinTBNLA2wt   skin_tbnla_2w[mesh.num_vertices]<fgcolor=0x347b52>; break;
+            case 0x14d40020  : IASkinTB4wt      skin_tb_4w[mesh.num_vertices]<fgcolor=0x3c227a>; break;
+            case 0xda55a021  : IASkinTBN4wt     skin_tbn_4w[mesh.num_vertices]<fgcolor=0x341a45>; break;
+            case 0x77d87022  : IASkinTBC4wt     skin_tbc_4w[mesh.num_vertices]<fgcolor=0x2b113e>; break;
+            case 0x64593023  : IASkinTBNLA4wt   skin_tbnla_4w[mesh.num_vertices]<fgcolor=0x230839>; break;
+            case 0x2f55c03d  : IASkinOTB_4WT_4M skin_otb_4w_4m[mesh.num_vertices]<fgcolor=0x8a009b>; break;
+            case 0xbb424024  : IASkinTB8wt      skin_tb_8w[mesh.num_vertices]<fgcolor=0x22225e>; break;
+            case 0x75c3e025  : IASkinTBN8wt     skin_tbn_8w[mesh.num_vertices]<fgcolor=0x1f1f53>; break;
+            case 0xd84e3026  : IASkinTBC8wt     skin_tbc_8w[mesh.num_vertices]<fgcolor=0x1d1b48>; break;
+            case 0xcbcf7027  : IASkinTBNLA8wt   skin_tbnla_8w[mesh.num_vertices]<fgcolor=0x1a183d>; break;
+        }
+    }vertices;
+    FSeek(header.offset_buffer_indices + face_offset * 2 + face_position * 2);
+    struct
+    {
+        short idx[face_count];
+    }indices;
+    FSeek(checkpoint);
+
+}Mesh;
+
+struct WeightBound
+{
+    uint boneID;
+    float unk_01[3];
+    float bssphere[4];
+    float bboxMin[4];
+    float bboxMax[4];
+    float oabb_matrix[16];
+    float oabb_dimension[4];
+};
+
+MODHeader header<fgcolor=0x008000>;
+if (header.num_bones > 0)
+{
+    FSeek(header.offset_bones);
+    Bone bones[header.num_bones]<fgcolor=0x008080>; 
+    Matrix4x4 local_transform[header.num_bones]<bgcolor=0x788673>;
+    Matrix4x4 inverse_bind_matrices[header.num_bones]<bgcolor=0x3d340c>;
+    BoneAnimMapping bone_anim_maping<bgcolor=0x4d1220>;
+    //BoneMapping bones_mapping[header.num_bone_mappings]<optimize=false>;
+};
+FSeek(header.offset_groups);
+Group groups[header.num_groups]<fgcolor=0xaf75c0>;
+MaterialName material_names[header.num_materials_names];
+
+struct{
+    FSeek(header.offset_meshes);
+    Mesh mesh[header.num_meshes]<optimize=false,fgcolor=0x00aaff>;
+}meshes;
+WeightBound weight_bound[header.num_weight_bounds_210]<fgcolor=0x50c050>;

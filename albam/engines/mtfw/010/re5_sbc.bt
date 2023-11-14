@@ -51,7 +51,7 @@ struct SBC1Head
     char id_magic[4];
     uint16 unk_01;
     uint16 num_sbc_group;
-    uint16 unk_02;
+    uint16 num_sbc_group_bb;
     uint16 unk_03;
     uint32 num_bboxes;
     uint32 num_faces;
@@ -59,13 +59,13 @@ struct SBC1Head
     BBox bbox;
 };
 
-struct SBCBBbox
+struct BVHNode
 {
     PBBox box_a;
     PBBox box_b;
     uint16 unk_00;
     uint16 unk_01;
-    uint32 unk_03;
+    uint32 unk_03;// parent node?
     uint32 nulls[2];
 };
     
@@ -77,7 +77,7 @@ struct SBCgroup
     uint32 ofs_verts;
     uint32 group_id;
     BBox a;
-    BBox b;
+    BBox b; // b and c boxes don't look like bounding boxes
     BBox c;
     uint16 ida;
     uint16 idb;
@@ -85,16 +85,19 @@ struct SBCgroup
 
 struct SBCFace
 {
-    FaceVerts face_verts;
-    uint16 unk;
-    uint16 unk_00;
-    uint16 unk_01;
-    uint32 unk_eff;//more than 0 only in _eff
+    FaceVerts face_verts<bgcolor=0xA6F10>;
+    ubyte unk_00<bgcolor=0x50c020>; // 
+    ubyte unk_01<bgcolor=0x50c020>; //
+    uint32 unk_02<bgcolor=0x20c0c0>;
+    uint32 unk_eff<bgcolor=0x2050c0>;//more than 0 only in _eff
     uint32 nulls[3];
 };
 
 SBC1Head header<bgcolor=0x4b1c4a>;
-SBCBBbox bboxes[header.num_bboxes]<bgcolor=0x7a5f1d>;
-SBCgroup groups[header.num_sbc_group]<bgcolor=0x584571>;
-SBCFace faces[header.num_faces]<bgcolor=0xA6F10>;
-Vertex vertices[header.num_vertices]<bgcolor=0x4f4f2f>;
+if(header.id_magic == "SBC1")
+{
+    BVHNode bvh_nodes[header.num_bboxes]<bgcolor=0x7a5f1d>;
+    SBCgroup groups[header.num_sbc_group]<bgcolor=0x584571>;
+    SBCFace faces[header.num_faces];
+    Vertex vertices[header.num_vertices]<bgcolor=0x4f4f2f>;
+};
