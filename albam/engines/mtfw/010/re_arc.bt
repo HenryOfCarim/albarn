@@ -1,0 +1,38 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: re_arc.bt
+//   Authors: HenryVIII
+//   Version: 0.1
+//   Purpose:
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+
+struct ARCHeader
+{
+    char    magic[4];
+    int16   version;
+    int16   num_files;
+};
+
+typedef struct 
+{
+    char    file_path[64];
+    int32   file_type;
+    uint32  zsize;
+    uint32  size : 29;
+    uint32  flags : 3;
+    uint32  offset;
+    local uint32 savepoint=FTell();
+    FSeek(offset);
+    ubyte raw_data[zsize]<fgcolor=0x2020c0>;
+    FSeek(savepoint);
+    
+}FileEntry;'
+
+ARCHeader header<fgcolor=0x008000>;
+FileEntry file_entries[header.num_files]<optimize=false,fgcolor=0x808000>;
