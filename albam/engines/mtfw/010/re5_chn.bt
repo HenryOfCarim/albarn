@@ -14,58 +14,88 @@ local uint64 i<hidden=true>;
 local uint local_ofc <hidden=true>;
 local uint savepoint <hidden=true>;
 
-struct header
+
+enum JOINT_ATTRIBUTE //rChain::JointInfo::JOINT_ATTRIBUTE /* int */
 {
-    uint magic;
-    uint unk_id;
-    uint size;
-    ubyte unk_num;
-    ubyte unk_01;
-    ubyte unk_02;
-    ubyte unk_03;
+	JOINT_ATTR_CONSTRAINT = 0x1,
+	JOINT_ATTR_ATTACHED = 0x2,
+	JOINT_ATTR_NOROTATE = 0x4,
 };
 
-struct block_body
+enum <ubyte> COL_SHAPE //rChain::JointInfo::JOINT_COL_SHAPE /* int */
 {
-    uint bone_type;
-    ubyte bone_anim_index;
-    ubyte unk_id_01;
-    ubyte unk_id_type;
-    ubyte unk_id_02;
-    uint unk_path[2];
-    float unk_floats[8]; // float 4 is something like viscosity
-    float unk_00;
-    uint unk_01;
-    float unk_02;
-    float unk_03;
-    ubyte bone_parent;
-    ubyte bone_child;
-    uint16 unk_04;
-    uint unk_05;
-    uint unk_06;
-    float unk_07;
-    uint unk_path_01[4];
+	JOINT_COL_SPHERE = 0x1,
+	JOINT_COL_CAPSULE = 0x2,
 };
 
-struct block
+enum <ubyte> CHAIN_TYPE//rChain::ChainInfo::CHAIN_TYPE /* int */
+{
+	CHAIN_TYPE_CHAIN = 0x1,
+	CHAIN_TYPE_SHAKE = 0x2,
+};
+
+struct VectorF3
+{
+    float   x;
+    float   y;
+    float   z;
+};
+
+struct Header // Chain::Header size : 0x00000010 
+{
+    uint        magic;
+    uint        version;
+    uint        data_size;
+    ubyte       chain_info_num; //  chain_info_num
+    ubyte       reserve[3];
+};
+
+struct JointInfo // rChain::JointInfo size : 0x00000060
+{
+    JOINT_ATTRIBUTE attr; // attr
+    ushort          ref_joint_no; // uses anim indices
+    ubyte           node_num; //  pair_joint_no
+    ubyte           reserve0;
+    uint            reserve1[2];
+    VectorF3        min_angle;
+    float           spring_coef;
+    VectorF3        max_angle;
+    float           dumping_coef;
+    float           mass;
+    ubyte           restrict_flag; // can use parent bone id
+    COL_SHAPE           col_shape;
+    ubyte           reserve2[2];
+    float           col_radius;
+    float           air_regist;
+    ubyte           node_joint_no[8];
+    float           friction;
+    float           soft_coef;
+    float           bend_regist;
+    uint            reserve[3];
+};
+
+struct ChainInfo // rChain::ChainInfo size : 0x00000020
 {
     local_ofc = FTell();
-    ubyte block_num;
-    ubyte unk_num;
-    uint16 unk_00;
-    uint unk_data_pos;
-    uint unk_ofc[2];
-    float unk_gravity[4];
+    ubyte       block_num; // joint_info_num
+    CHAIN_TYPE  chain_type; // chain_type
+    ushort      reserve;
+    uint        joint_info_offset;
+    uint        reserve1[2];
+    float       grav_scaler;
+    float       time_scaler;
+    float       dump_scaler;
+    float       freserve ;
     savepoint = FTell();
-    FSeek(unk_data_pos + local_ofc);
-    block_body body[block_num]<fgcolor=0xAC6242>;
+    FSeek(joint_info_offset + local_ofc);
+    JointInfo joint_info[block_num]<fgcolor=0xAC6242>;
     FSeek(savepoint);
 };
 
 
-header chn_header<fgcolor=cGreen>;
-for (i=0; i<chn_header.unk_num; i++)
+Header chn_header<fgcolor=cGreen>;
+for (i=0; i<chn_header.chain_info_num; i++)
 {
-    block chn_block<fgcolor=0x578439>;;
+    ChainInfo chn_info_block<fgcolor=0x578439>;;
 };
     

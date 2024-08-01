@@ -1,0 +1,150 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 0.1
+//   Purpose: 
+//  Category: Bluepoint's engine mesh format
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+BigEndian();
+local uint64 savepoint;
+
+struct Vec4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct Vertex
+{
+    float x;
+    float y;
+    float z;
+    hfloat u;
+    hfloat v;
+};
+
+struct Normal
+{
+    ubyte x;
+    ubyte y;
+    ubyte z;
+    ubyte w;
+};
+
+struct UV
+{
+    hfloat u;
+    hfloat v;
+};
+
+struct Col
+{
+    uint16 unk01[4];
+};
+
+struct Bone
+{
+    byte unk00[4];
+};
+
+struct Indices
+{
+    uint32 indices[3];
+};
+
+struct BBox
+{
+    float min[3];
+    float max[3];
+};
+
+struct Object
+{
+    BBox    bbox;
+    uint16 texture_index;
+    ubyte   unk01;
+    uint32 stream_start;
+    uint32 stream_count;
+    uint32 index_start;
+    uint32 index_count;
+    uint32 num_joints;
+    uint32 joint_map[num_joints];
+};
+
+typedef struct Faces
+{
+    uint32 num_indices;
+    Indices faces[(num_indices/3)];
+    uint32 UsedTexturesCount;
+    uint32 num_objects;
+    Object objects[num_objects]<optimize=false, fgcolor=0xC020c0>;
+    
+};
+
+typedef struct
+{
+    char id[4];
+    uint16 unk01;
+    uint16 unk02;
+    uint32 start; // +2C
+    uint32 size;
+    savepoint =FTell();
+    FSeek(start + 16 + models.offset);
+    switch(id) 
+    {
+        case "POS0" : Vec4      vertices[(size/16)]<fgcolor=0x903020>;break;
+        case "TEX0" : UV        textures[(size/4)]<fgcolor=0x40C020>;break;
+        case "COL0" : Col       cols[(size/8)]<fgcolor=0x808020>;break;
+        case "NRM0" : Normal    normals[(size/4)]<fgcolor=0x808020>;break;
+        case "BONI" : Bone      bones[(size/4)]<fgcolor=0x808020>;break;
+    };
+    FSeek(savepoint);
+}DataHeader<read=id>;
+
+struct ModlHeader
+{
+    uint32  offset<fgcolor=0x1010a0>;
+    local uint64  checkpoint = FTell();
+    FSeek(offset + 4);
+    char        id[4];
+    uint16      id;
+    uint16      flags;
+    uint32      index_start; // +2C
+    uint32      num_data;
+    DataHeader  modl_data[num_data]<optimize=false>;
+    uint32      filler[3];
+    FSeek(index_start + offset + 16);
+    Faces   faces;
+    FSeek(checkpoint);
+};
+
+typedef struct GMDL { //size 18
+	uint32 Magic;
+	uint32 unk_4;
+	uint32 unk_8;
+	uint32 unk_C;
+	uint32 num_models;
+	uint32 Unk14;
+    ModlHeader models[num_models]<optimize=false, fgcolor=0x805050>;
+};
+
+struct Test
+{
+    char     id[4];
+    uint32  unk01[3];
+};
+
+struct Bbox
+{
+    Vec4 pos;
+};
+
+uint32 unk_id; // 0x0f000300
+GMDL    gmdl_header<fgcolor=0x008000>;

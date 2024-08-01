@@ -1,46 +1,59 @@
 //------------------------------------------------
 //--- 010 Editor v12.0.1 Binary Template
 //
-//      File: 
+//      File: re5_ccl.bt
 //   Authors: HenryVIII
-//   Version: 0.2
-//   Purpose: 
+//   Version: 0.3
+//   Purpose: parsing RE5 chain collision format 
 //  Category: 
 // File Mask: 
-//  ID Bytes: 
+//  ID Bytes: 43 43 4c 00
 //   History: 
 //------------------------------------------------
-struct CCLHeader
+enum COL_ATTR // rChainCol::ColInfo::COLLISION_ATTRIBUTE /* int */
 {
-    uint32 magic;
-    uint32 id;
-    uint32 block_num;
-    uint32 size;
+	COL_ATTR_ATTACHED = 0x1,
 };
 
-struct PrimLocation
+enum <ubyte> COL_SHAPE// rChainCol::ColInfo::COLLISION_SHAPE /* int */
 {
-    float x_loc;
-    float y_loc;
-    float z_loc;
+	SHAPE_SPHERE = 0x0,
+	SHAPE_CAPSULE = 0x1,
+	SHAPE_AABB = 0x2,
+	SHAPE_OBB = 0x3,
 };
 
-struct DataBlock
+struct CCLHeader // ChainCol::Header 
 {
-    uint32 primitive;
-    uint16 parent_bone; // anim index
-    uint16 child_bone; 
-    ubyte unk_04;
-    ubyte unk_05;
-    uint16 unk_06;
-    uint16 unk_07;
-    uint16 unk_08;
-    PrimLocation prim_location;
-    float unk_floats[8];
-    uint32 unk_09;
+    uint magic;
+    uint id;
+    uint block_num;
+    uint size;
+};
+
+struct VectorF3
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct ColInfo // ColInfo  size : 0x00000040
+{
+    COL_ATTR    attr;
+    ushort      ref_joint_no; // 0x00000004 anim index
+    ushort      pair_joint_no; // 0x00000006 anim index
+    COL_SHAPE       shape; // 0x00000008
+    uchar       reserve[3]; // 0x00000009
+    float       reserve1; //0x0000000c
+    VectorF3    position; //0x00000010
+    uint        id; // 0x0000001c
+    VectorF3    extent; //0x0000002c
+    float       radius; // 0x0000002c
+    VectorF3    angle; // 0x00000030
+    float      reserve2; // 0x0000003c
 };
 
 
 CCLHeader header<bgcolor=0x613340>;
-DataBlock data_blocks[header.block_num]<bgcolor=0x5f6935>;
-//block data_blocks;
+ColInfo data_blocks[header.block_num]<bgcolor=0x5f6935>;

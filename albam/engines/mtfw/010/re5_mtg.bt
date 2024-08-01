@@ -3,38 +3,38 @@
 //
 //      File: 
 //   Authors: HenryVIII
-//   Version: 0.12
+//   Version: 1.0
 //   Purpose: 
 //  Category: 
 // File Mask: .mtg
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
-struct MTGHeader
+struct MONTAGE_PARTS// rModelMontage::PARTS /* size : 0x00000008 */
+{
+	uint no : 16; // 0x00000000
+	uint type : 16; // 0x00000000
+	uint group; // 0x00000004
+};
+
+struct MONTAGE // rModelMontage::MONTAGE /* size : 0x00000014 */
+{
+	uint kind[4]; // 0x00000000
+	float scale; // 0x00000010
+};
+
+typedef struct MTGHeader // rModelMontage::HEADER /* size : 0x00000018 */
 {
     uint32 magic;
     uint32 version;
-    uint32 num_render_groups;
-    uint32 num_presets;
-    uint32 block_00_ofc;
-    uint32 block_01_ofc;
-};
-
-
-struct RenderGroups
-{
-    uint16 render_group;
-    uint16 unk_01;
-    uint32 unk_03; //power of 2
-};
-
-struct Preset
-{
-    ubyte visibility_flags[12];// every byte is a render group. 01 - hidden
-    uint32 unk_03;
-    float scale;
+    uint32 parts_num ; // parts_num 
+    uint32 montage_num; //  montage_num
+    uint32 parts_ofc; // *parts
+    uint32 montage_ofc; // *montage
+    FSeek(parts_ofc);
+    MONTAGE_PARTS render_groups[parts_num]<fgcolor=0x008080>;
+    FSeek(montage_ofc);
+    MONTAGE visibility_presets[montage_num]<fgcolor=0x808000>;
 };
 
 MTGHeader header<fgcolor=0x008000>;
-RenderGroups render_groups[header.num_render_groups]<fgcolor=0x008080>;
-Preset visibility_presets[header.num_presets]<fgcolor=0x808000>;
