@@ -3,7 +3,7 @@
 //
 //      File: re5_mod.bt
 //   Authors: Raq, also special thanks to TheIndra & alphaZomega
-//   Version: 2.5
+//   Version: 3.0
 //   Purpose: Parsing Resident evil 5 mesh format
 //  Category: Modding
 // File Mask: .mod
@@ -14,65 +14,286 @@ local uint64 i<hidden=true>;
 local uint64 j<hidden=true>;
 local uint64 k<hidden=true>;
 
-struct MODHeader
+enum SHADER_VDECL //sShader::VDECL
 {
-    char id_magic[4];
-    ubyte version;
-    byte revision;
-    ushort num_bones;
-    short num_meshes;
-    ushort num_materials;
-    uint num_vertices;
-    uint num_faces;
-    uint num_edges;
-    uint size_vertex_buffer;
-    uint size_vertex_buffer_2;
-    uint num_textures;
-    uint num_groups;
-    uint num_bone_mappings;
-    uint offset_bones;
-    uint offset_groups;
-    uint offset_textures;
-    uint offset_meshes;
-    uint offset_buffer_vertices;
-    uint offset_buffer_vertices_2; // 8 bones per vertex related
-    uint offset_buffer_indices;
-    uint reserved_01;
-    uint reserved_02;
-    float sphere_x;
-    float sphere_y;
-    float sphere_z;
-    float sphere_w;
-    float box_min_x;
-    float box_min_y;
-    float box_min_z;
-    float box_min_w;
-    float box_max_x;
-    float box_max_y;
-    float box_max_z;
-    float box_max_w;
-    uint unk_01;
-    uint unk_02;
-    uint unk_03;
-    uint unk_04;
-    uint16 unk_05[2];
-    uint16 unk_06[2];
-    uint16 unk_07[2];
-    uint unk_08;
-    uint unk_09;
-    uint unk_10;
-    uint unk_11;
-    uint reserved_03;
+	VDECL_SKIN = 0x0,
+	VDECL_NONSKIN = 0x1,
+	VDECL_SKINEX = 0x2,
+	VDECL_FILTER = 0x3,
+	VDECL_FILTER2 = 0x4,
+	VDECL_SKIN_BASE = 0x5,
+	VDECL_NONSKIN_BASE = 0x6,
+	VDECL_SKINEX_BASE = 0x7,
+	VDECL_NONSKIN_COL = 0x8,
+	VDECL_NONSKIN_COLEX = 0x9,
+	VDECL_SHAPE_BASE = 0xa,
+	VDECL_SHAPE = 0xb,
+	VDECL_SKIN_COL = 0xc,
+	VDECL_MATERIAL = 0xd,
+	VDECL_SKINSO = 0xe,
+	VDECL_I2GLINE = 0xf,
+	VDECL_NUM = 0x10,
 };
 
-struct Bone
+enum PRIMITIVE_INFO_CONNECT
 {
-	ubyte anim_map_index;
-	ubyte parent_index; //255: root
-	ubyte mirror_index;
-	ubyte palette_index;
-	float unk_01;
-	float parent_distance;
+	CONNECT_INDEX = 0x1,
+	CONNECT_MATERIAL = 0x2,
+	CONNECT_ATTRIBUTE = 0x4,
+	CONNECT_ENVELOPE = 0x8,
+	CONNECT_TBASEMAP = 0x10, //16
+	CONNECT_SKIN = 0x20, //32
+	CONNECT_SHADOWMAP = 0x40, //64
+	CONNECT_ALPHAPRI = 0x80, //128
+	CONNECT_ALL = 0xff,
+};
+
+enum MATERIAL_INFO_ATTR
+{
+	ATTR_BRIDGE = 0x1,
+	ATTR_NUKI = 0x8,
+	ATTR_SOLID = 0x10,
+	ATTR_OVERLAP = 0x20,
+	ATTR_TRANSPARENT = 0x40,
+};
+
+enum MATERIAL_INFO_VTYPE
+{
+	VTYPE_SKIN = 0x0,
+	VTYPE_SKINEX = 0x1,
+	VTYPE_NONSKIN = 0x2,
+	VTYPE_NONSKIN_COL = 0x3,
+	VTYPE_SHAPE = 0x4,
+	VTYPE_SKIN_COL = 0x5,
+};
+
+enum PIPELINE_STANDARD // cMaterialStandard::PIPELINE_STANDARD
+{
+	PL_STANDARD_SKIN = 0x1,
+	PL_STANDARD_LIGHTING = 0x8,
+	PL_STANDARD_NORMALMAP = 0x48,
+	PL_STANDARD_SPECULAR = 0x120,
+	PL_STANDARD_LIGHTMAP = 0x5a0,
+	PL_STANDARD_MULTITEXTURE = 0x2d00,
+};
+
+
+enum MATERIAL_FUNC_SKIN // cMaterial::FUNC_SKIN
+{
+	SKIN_NONE = 0x0,
+	SKIN_1WT = 0x1,
+	SKIN_2WT = 0x2,
+	SKIN_4WT = 0x3,
+	SKIN_8WT = 0x4,
+	SKIN_4WT_SHAPE = 0x5,
+	SKIN_STREAM_OUT = 0x6, //not in re5
+	SKIN_RESERVE = 0x7, // not in re5
+	MAX_SKIN = 0x8, // not in re5
+};
+
+enum MATERIAL_FUNC_LIGHTING //cMaterialStandard::FUNC_LIGHTING
+{
+	LIGHTING_NONE = 0x0,
+	LIGHTING_4SPOT = 0x1,
+	LIGHTING_SH4SPOT = 0x2,
+	LIGHTING_EMITSH4SPOT = 0x3,
+	LIGHTING_THINSH4SPOT = 0x4,
+	LIGHTING_RESERVE0 = 0x5,
+	LIGHTING_RESERVE1 = 0x6,
+	LIGHTING_RESERVE2 = 0x7,
+	LIGHTING_TEX4SPOT = 0x8,
+	MAX_LIGHTING = 0x9,
+};
+
+enum MATERIAL_FUNC_NORMALMAP //cMaterialStandard::FUNC_NORMALMAP
+{
+	NORMALMAP_NONE = 0x0,
+	NORMALMAP_STANDARD = 0x1,
+	NORMALMAP_DETAIL = 0x2,
+	NORMALMAP_PARALLAX = 0x3,
+	MAX_NORMALMAP = 0x4,
+};
+
+enum MATERIAL_FUNC_SPECULAR //cMaterialStandard::FUNC_SPECULAR
+{
+	SPECULAR_NONE = 0x0,
+	SPECULAR_STANDARD = 0x1,
+	SPECULAR_MIRROR = 0x2,
+	SPECULAR_POWMAP = 0x3,
+	SPECULAR_RIM = 0x4,
+	MAX_SPECULAR = 0x5,
+};
+
+struct BLENDSTATE //cTrans::BLENDSTATE /* size : 0x00000004 */
+{
+	uint destblend_alpha : 8;
+	uint blendop_alpha : 3;
+	uint srcblend_alpha : 5;
+	uint destblend : 8;
+	uint blendop : 3;
+	uint srcblend : 5;
+};
+
+enum MATERIAL_FUNC_LIGHTMAP //cMaterialStandard::FUNC_LIGHTMAP
+{
+	LIGHTMAP_NONE = 0x0,
+	LIGHTMAP_STANDARD = 0x1,
+	LIGHTMAP_SHADOW = 0x2,
+	LIGHTMAP_BLEND = 0x3,
+	LIGHTMAP_BLENDSHADOW = 0x4,
+	LIGHTMAP_VCOLOR = 0x5,
+	LIGHTMAP_HDRVCOLOR = 0x6,
+	LIGHTMAP_TEXCOLOR = 0x7,
+	MAX_LIGHTMAP = 0x8,
+};
+
+enum MATERIAL_FUNK_MULTITEXTURE //cMaterialStandard::FUNC_MULTITEXTURE
+{
+	MULTITEXTURE_NONE = 0x0,
+	MULTITEXTURE_ALPHA = 0x1,
+	MULTITEXTURE_BASE = 0x2,
+	MULTITEXTURE_FREEZE = 0x3,
+	MULTITEXTURE_VOLUME = 0x4,
+	MULTITEXTURE_SPEC = 0x5,
+	MULTITEXTURE_BLUR = 0x6,
+	MAX_MULTITEXTURE = 0x7,
+};
+
+
+struct VectorF3
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct VectorF4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct VectorF2
+{
+    float x;
+    float y;
+};
+
+struct Matrix
+{
+    VectorF4 m[4];
+};
+
+struct MtSphere
+{
+    VectorF3    pos;
+    float         r;
+};
+
+struct MtAABB // size : 0x00000020
+{
+    VectorF4 minpos;
+    VectorF4 minpos;
+};
+
+struct MtOBB // size : 0x00000050
+{
+    Matrix      coord;
+    VectorF4   extent; // VectorF3 but last 4bytes are a filler
+};
+
+struct MODEL_INFO //rModel::MODEL_INFO  size : 0x00000010 
+{
+	int     middist; // 0x00000000
+	int     lowdist; // 0x00000004
+	uint    light_group; // 0x00000008
+	ushort  strip_type : 8; // 0x0000000c
+	ushort  memory : 8; // 0x0000000c
+	ushort  reserved; // 0x0000000e
+};
+
+struct RCN_TABLE /* size : 0x00000004 */
+{
+	uint vindex : 21;
+	uint noffset : 10;
+	uint edge : 1;
+};
+
+struct RCN_TRIANGLE /* size : 0x00000008 */
+{
+	uint64 v0 : 21; // 0x00000000
+	uint64 v1 : 21; // 0x00000000
+	uint64 v2 : 21; // 0x00000000
+	uint64 reserved : 1; // 0x00000000
+};
+
+struct RCN_VERTEX /* size : 0x00000010 */
+{
+	uint x : 16; // 0x00000000
+	uint y : 16; // 0x00000000
+	uint z : 16; // 0x00000004
+	uint w : 16; // 0x00000004
+	uint w0 : 8; // 0x00000008
+	uint w1 : 8; // 0x00000008
+	uint w2 : 8; // 0x00000008
+	uint w3 : 8; // 0x00000008
+	uint j0 : 8; // 0x0000000c
+	uint j1 : 8; // 0x0000000c
+	uint j2 : 8; // 0x0000000c
+	uint j3 : 8; // 0x0000000c
+};
+
+struct RCN_HEADER // Recalculate Normals  size : 0x00000020
+{
+    uint ptri;
+    uint pvtx;
+    uint ptb;
+	uint tri_num; // 0x0000000c
+	uint vtx_num; // 0x00000010
+	uint tbl_num; // 0x00000014
+	uint parts; // 0x00000018
+	uint reserved ; // 0x0000001c
+};
+
+struct MODHeader // rModel::MODEL_HDR size : 0x00000090
+{
+    char        id_magic[4];
+    ubyte       version; 
+    byte        revision; //0x4
+    ushort      num_bones; // jnt_num
+    ushort      num_meshes; // primitive_num
+    ushort      num_materials; //material_num
+    uint        num_vertices; // vertex_num
+    uint        num_faces; // index_num 0x10
+    uint        num_edges; // polygon_num
+    uint        size_vertex_buffer; // vertexbuf_size
+    uint        size_vertex_buffer_2; //vertexbuf_size2
+    uint        num_textures; // texture_num 0x20
+    uint        num_groups; // parts_num
+    uint        num_bone_mappings; // envelope_num
+    uint        offset_bones; // joint_info
+    uint        offset_groups; // parts_info 0x30
+    uint        offset_textures; // material_info
+    uint        offset_meshes; // primitive_info
+    uint        offset_buffer_vertices; // vertex_data
+    uint        offset_buffer_vertices_2; // vertex_data2 8 bones per vertex related
+    uint        offset_buffer_indices; // index_data
+    uint        reserved[2];
+    MtSphere    bounding_sphere; // 0x00000050
+    MtAABB      bounding_box; // 0x00000060 w is a filler
+    MODEL_INFO  modelinfo; // 0x00000080
+};
+
+struct Bone // rModel::JOINT_INFO /* size : 0x00000018 */
+{
+	ubyte anim_map_index; // unsigned int no : 8 
+	ubyte parent_index; // unsigned int parent : 8 / 255: root
+	ubyte mirror_index; // unsigned int symmetry : 8
+	ubyte palette_index;// unsigned int reserved : 8 
+	float radius;
+	float parent_distance; // float length
 	float location_x;
 	float location_y;
 	float location_z;
@@ -86,24 +307,28 @@ struct Matrix4x4
 struct BoneAnimMapping
 {
 	ubyte a[256];
-} ;
+};
 
- struct BoneMapping
+typedef struct BoneMapping
 {
-    uint unk_01;
-    ubyte values[32];
+    uint num_bones;
+    local uint num_nulls; //hack for 3ds max mods
+    if (num_bones>32)
+    {
+        ubyte values[num_bones];
+        num_nulls = 64 - num_bones;
+    }
+    else
+    {
+        ubyte values[32];
+    }
 } ;
  
-struct  Group
+struct  PartsInfo // rModel::PARTS_INFO
 {
-    uint group_index;
-    float unk_02;
-    float unk_03;
-    float unk_04;
-    float unk_05;
-    float unk_06;
-    float unk_07;
-    float unk_08;
+    uint no; // number
+    uint reserved[3];
+    MtSphere  boundary; // MtSphere 
 };
 
 struct TextureData {
@@ -111,31 +336,57 @@ struct TextureData {
 };
 
 struct MaterialData{
-    ushort unk_01;
-    struct {
-        uint16 unk_flag_01 : 1;
-        uint16 unk_flag_02 : 1;
-        uint16 unk_flag_03 : 1;
-        uint16 unk_flag_04 : 1;
-        uint16 unk_flag_05 : 1;
-        uint16 unk_flag_06 : 1;
-        uint16 unk_flag_07 : 1;
-        uint16 unk_flag_08 : 1;
-        uint16 unk_flag_09 : 1;
-        uint16 unk_flag_10 : 1;
-        uint16 unk_flag_11 : 1;
-        uint16 flag_8_bones_per_vertex : 1;
-        uint16 unk_flag_13 : 1;
-        uint16 unk_flag_14 : 1;
-        uint16 unk_flag_15 : 1;
-        uint16 unk_flag_16 : 1;
-    } unk_flag;
-    ushort unk_02[10];
-    uint texture_indices[8];
-    float unk_12[26];
+    struct{
+        uint    fog_enable : 1; //0 only for Moon s600_03_tsuki.mod_0000
+        uint    zwrite : 1; //0 sorts behind trasparent materials
+        MATERIAL_INFO_ATTR    attr : 12;
+        uint    no : 8;
+        uint    envmap_bias : 5;
+        MATERIAL_INFO_VTYPE    vtype : 3;
+        uint    uvscroll_enable : 1;
+        uint    ztest : 1;
+    }param32;
+    struct{
+        MATERIAL_FUNC_SKIN    func_skin : 4; //0x4
+        uint    func_reserved2 : 2;
+        MATERIAL_FUNC_LIGHTING    func_lighting : 4;
+        MATERIAL_FUNC_NORMALMAP    func_normalmap : 4;
+        MATERIAL_FUNC_SPECULAR   func_specular : 4;
+        MATERIAL_FUNC_LIGHTMAP    func_lightmap : 4;
+        MATERIAL_FUNK_MULTITEXTURE    func_multitexture : 4;
+        uint    func_reserved : 6;
+    }function32;
+    uint    htechnique; // 0x8
+    uint    pipeline;
+    uint    pvdeclbase; 
+    uint    pvdecl; // 0x00000000 or 0xffffffff
+    uint    basemap;
+    uint    normalmap;
+    uint    maskmap;
+    uint    lightmap;
+    uint    shadowmap;
+    uint    additionalmap;
+    uint    envmap;
+    uint    detailmap;
+    uint    occlusionmap;
+    float    transparency;
+    VectorF4     fresnel_factor<fgcolor=0xC05090>;
+    VectorF4     lightmap_factor;
+    VectorF4     detail_factor;
+    uint        reserved1;
+    uint        reserved2;
+    uint        lightblendmap;
+    uint        shadowblendmap;
+    VectorF2    parallax_factor;
+    float       flip_binormal;
+    float       heightmap_occ;
+    BLENDSTATE       blend_state;
+    uint        alpha_ref;
+    uint        heightmap;
+    uint        glossmap;
 };
 
-struct Vtx0
+struct Vtx0 // non_skin
 {
     float position_x;
     float position_y;
@@ -245,35 +496,39 @@ struct SVtx4
     ubyte normal_w;   
 };
 
-typedef struct
+typedef struct // rModel::PRIMITIVE_INFO  size : 0x00000034
 {
-    ushort group_index;
-    ushort material_index;
-    ubyte constant; //always 1
-    ubyte level_of_detail;
-    ubyte unk_01;
-    ubyte vertex_format;
-    ubyte vertex_stride;
-    ubyte vertex_stride_2;
-    ubyte unk_03;
-    ubyte unk_flags;
-    ushort num_vertices;
-    ushort vertex_position_end;
-    uint vertex_position_2;
-    uint vertex_offset;
-    uint vertex_offset_2;
-    uint face_position;
-    uint num_faces;
-    uint face_offset;
-    ubyte unk_06;
-    ubyte unk_07;
-    ushort vertex_position;
-    ubyte vertex_num_groups;
-    ubyte bone_palette_index;
-    ubyte unk_08;
-    ubyte unk_09;
-    ushort unk_10;
-    ushort unk_11;
+    uint    parts_no : 16;
+    uint    material_no : 16;
+    uint    disp : 8; // 0x00000004
+    uint    lod : 8;
+    uint    alphapri : 8;
+    uint    vertex_format : 8; // weight_num : 8
+    uint    vertex_stride : 8; // 0x00000008
+    uint    vertex_stride_2 : 8;
+    uint    connective : 8 ; // probably related PRIMITIVE_INFO_CONNECT but values aren't right
+    uint    shape : 1;
+    uint    env : 1;
+    uint    refrect : 1;
+    uint    reserved2 : 2;
+    uint    shadow_cast : 1;
+    uint    shadow_recv : 1;
+    uint    sort : 1;
+    uint    num_vertices : 16; //vertex_num : 16 0x0000000c
+    uint    vertex_position_end : 16; // max_index : 16 0x0000000c
+    uint    vertex_position_2; //  vertex_ofs 0x00000010
+    uint    vertex_offset; // vertex_base 0x00000014
+    uint    vertex_offset_2; // vertex_base2 0x00000018
+    uint    face_position; // index_ofs 0x0000001c
+    uint    index_num; //index_num 0x00000020
+    uint    face_offset; //index_base // 0x00000024
+    SHADER_VDECL vdeclbase : 8; // 0x00000028
+    SHADER_VDECL vdecl : 8; // 0x00000028
+    uint min_index : 16; // min_index : 16 // 0x00000028
+    uint boundary_num: 8;//was 16 but it's doesn't work with  envelope 0x0000002c 
+    uint envelope : 8; //0x0000002c
+    uint rcn_base : 16;//0x0000002c
+    uint boundary; //0x00000030 pointer to weight bounds?
     local uint checkpoint = FTell();
     FSeek(header.offset_buffer_vertices + (vertex_position_2 * vertex_stride) + vertex_offset);
     struct
@@ -297,28 +552,26 @@ typedef struct
         FSeek(header.offset_buffer_vertices_2 + (vertex_position_2 * vertex_stride_2) + vertex_offset_2);
         switch(vertex_stride_2) 
         {
-            case 8 :  SVtx8 test[num_vertices]<fgcolor=0x4000c0>; break;
-            case 4 :  SVtx4 test[num_vertices]<fgcolor=0x4000c0>; break;
+            case 8 :  SVtx8 vtx2_8[num_vertices]<fgcolor=0x4000c0>; break;
+            case 4 :  SVtx4 vtx2_4[num_vertices]<fgcolor=0x4000c0>; break;
         }
           
     };
-    FSeek(header.offset_buffer_indices + face_offset * 2 + face_position * 2);
+    FSeek(header.offset_buffer_indices + face_offset * 2 + face_position * 2); // some bugged meshes use wrong face_offset
     struct
     {
-        short idx[num_faces];
+        short idx;//idx[index_num];
     }indices;
     FSeek(checkpoint);
 }Mesh;
 
-struct WeightBound
+struct WeightBound // rModel::BOUNDARY_INFO  size : 0x00000090
 {
-    uint boneID;
-    float unk_01[3];
-    float bssphere[4];
-    float bboxMin[4];
-    float bboxMax[4];
-    float oabb_matrix[16];
-    float oabb_dimension[4];
+    uint        joint;
+    float       reserved[3];
+    MtSphere    sphere;
+    MtAABB      aabb;
+    MtOBB       obb;
 };
 
 struct tangent// only guess
@@ -329,23 +582,6 @@ struct tangent// only guess
     ubyte tangent_w;
 };
 
-struct unk_8_block_00
-{
-    uint16 face_id;
-    uint16 unk_01;
-};
-
-struct unk_8_block_01
-{
-    uint16 unk_01;
-    uint16 unk_02;
-    uint32 unk_03[3];
-};
-
-struct unk_8_block_02
-{
-    uint16 unk_00[4];
-};
 
 struct unk_buff_2
 {
@@ -354,12 +590,13 @@ struct unk_buff_2
 
 //Parsing//
 MODHeader header<fgcolor=0x008000>;
-if (header.unk_08 > 0)
+RCN_HEADER rcn<fgcolor=0x805050>; // datablock that exists only for some cut-scene heads
+struct
 {
-    unk_8_block_00 unk_block_00[header.unk_10]<fgcolor=0x808000>; // shading vtx faces
-    unk_8_block_01 unk_block_01[header.unk_09]<fgcolor=0x800080>; // probably uv
-    unk_8_block_02 unk_block_02[header.unk_08]<fgcolor=0x108010>; //probably normals
-};
+    RCN_TABLE rcn_tables[rcn.tbl_num]<fgcolor=0x808000>;
+    RCN_VERTEX rcn_vtxs[rcn.vtx_num]<fgcolor=0x800080>;
+    RCN_TRIANGLE rcn_tris[rcn.tri_num]<fgcolor=0x108010>;
+}rcn_body;
 if (header.num_bones > 0)
 {
     FSeek(header.offset_bones);
@@ -367,10 +604,10 @@ if (header.num_bones > 0)
     Matrix4x4 local_transform[header.num_bones]<bgcolor=0x788673>;
     Matrix4x4 world_transform[header.num_bones]<bgcolor=0x3d340c>;
     BoneAnimMapping bone_anim_maping<bgcolor=0x4d1220>;
-    BoneMapping bones_mapping[header.num_bone_mappings];
+    BoneMapping bones_mapping[header.num_bone_mappings]<optimize=false>;
 };
 FSeek(header.offset_groups);
-Group groups[header.num_groups]<fgcolor=0xaf75c0>;
+PartsInfo groups[header.num_groups]<fgcolor=0xaf75c0>;
 FSeek(header.offset_textures);
 TextureData textures[header.num_textures]<fgcolor=0x000ff7f>;
 MaterialData materials[header.num_materials]<fgcolor=0xaf7500>;
