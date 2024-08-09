@@ -1,0 +1,231 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: re4_bit.bt
+//   Authors: JADERLINK
+//   Version: 0.1 
+//   Purpose: parsing RE4 UDH mesh format
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+// Took from https://github.com/JADERLINK/RE4-UHD-BIN-TOOL/blob/main/RE4_UHD_BIN_TOOL
+
+struct Vec3
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct UV
+{
+    float u;
+    float v;
+
+};
+
+struct RGBA
+{
+    ubyte a;
+    ubyte r;
+    ubyte g;
+    ubyte b;
+};
+
+struct Strip
+{
+    uint16 ftype;
+    uint16 fcount;
+};
+
+struct FaceIndex
+{
+    uint buffer_size;
+    uint count;
+    uint strip_count;
+    Strip strips[strip_count];
+    ubyte padding[(buffer_size - (strip_count * 4 + 4))];
+};
+
+
+struct fmtBIN_Weight_Ext
+{
+    uint16 boneId1;
+    uint16 boneId2;
+    uint16 boneId3;
+    uint16 count;
+    ubyte weight1;
+    ubyte weight2;
+    ubyte weight1;
+    ubyte unk018;
+};
+
+struct fmtBIN_Weight
+{
+    ubyte boneId1;
+    ubyte boneId2;
+    ubyte boneId3;
+    ubyte count;
+    ubyte weight1;
+    ubyte weight2;
+    ubyte weight1;
+    ubyte unk018;
+};
+
+
+typedef struct Material
+{
+    ubyte unk_min_11;
+    ubyte unk_min_10;
+    ubyte unk_min_09;
+    ubyte unk_min_08;
+    ubyte unk_min_07;
+    ubyte unk_min_06;
+    ubyte unk_min_05;
+    ubyte unk_min_04;
+    ubyte unk_min_03;
+    ubyte unk_min_02;
+    ubyte unk_min_01;
+    ubyte material_flag;
+    ubyte diffuse_map;
+    ubyte bump_map;
+    ubyte opacity_map;
+    ubyte generic_specular_map;
+    ubyte intensity_specular_r;
+    ubyte intensity_specular_g;
+    ubyte intensity_specular_b;
+    ubyte unk_08;
+    ubyte unk_09;
+    ubyte specular_scale;
+    ubyte unk_11;
+    ubyte custom_specular_map;
+    FaceIndex face_index;
+};
+
+struct Bone //BoneLine
+{
+    ubyte BoneID;
+    ubyte BoneParent;
+    ushort filler;
+
+    float PositionX;
+    float PositionY;
+    float PositionZ;
+};
+
+struct PairLine
+{
+    ubyte data[8];
+};
+
+typedef struct BonePair
+{
+    uint        num_pair;
+    PairLine    line[num_pair];
+};
+
+typedef struct BoneAdj
+{
+    ubyte count[4];
+    ushort adj[(count[3])];
+};
+
+struct UhdBinHeader
+{
+    uint bone_offset; // magic: 60 00 00 00
+    uint unknown_x04; //--zeros
+    uint unknown_x08; // offset: 50 00 00 00 // address is present when adjacent_meshinfo_addr is present {but address goes to blank area}
+    uint vertex_colour_offset; //colors
+
+    uint vertex_texcoord_offset; // UV
+    uint weight_offset;
+    byte weight_count;
+    byte bone_count;
+    ushort material_count;
+    uint material_offset;
+
+    ushort texture1_flags;
+    ushort texture2_flags;
+    uint TPL_count; // quantidade de id de tpl usados
+    byte vertex_scale; // a descobrir oque é
+    byte unknown_x29;// a verificar
+    ushort weight2_count; //--same as weightcount
+    uint morph_offset; // não foi feito nada com isso ainda.
+
+    uint vertex_position_offset;
+    uint vertex_normal_offset;
+    ushort vertex_position_count;
+    ushort vertex_normal_count;
+    uint version_flags;
+
+    uint bonepair_offset; //unk005_addr
+    uint adjacent_offset; //adjacent_addr
+    uint vertex_weight_index_offset;  //  //--vertex weights id's array (2 words ) * numvertex
+    uint vertex_weight2_index_offset; //  //--vertex weights array  (2 words ) * numvertex
+};
+
+UhdBinHeader header<fgcolor=0x008000>;
+FSeek(header.bone_offset);
+Bone bones[header.bone_count]<bgcolor=0x4d1220>;
+
+//WeightMap
+FSeek(header.weight_offset);
+if(header.weight2_count > 255)
+fmtBIN_Weight_Ext weights[header.weight2_count]<fgcolor=0x231E6f>;
+else
+fmtBIN_Weight weights[header.weight_count]<fgcolor=0x231E6f>;
+
+//BonePairs
+if(header.bonepair_offset>0)
+{
+    FSeek(header.bonepair_offset);
+    BonePair bone_pairs<fgcolor=0x557500>;
+};
+
+//BoneAdjacent
+if(header.adjacent_offset>0)
+{
+FSeek(header.adjacent_offset);
+BoneAdj unk_adjs<fgcolor=0x847F3E>;
+};
+
+//Position
+FSeek(header.vertex_position_offset);
+Vec3 vertex_position[header.vertex_position_count]<fgcolor=0x000ff7f>;
+
+//Indices
+if(header.vertex_weight_index_offset>0)
+{
+FSeek(header.vertex_weight_index_offset);
+ushort indexes[header.vertex_position_count]<fgcolor=0x00aaff>;
+};
+
+//Normals
+FSeek(header.vertex_normal_offset);
+Vec3 normals[header.vertex_normal_count]<fgcolor=0xaf7500>;
+
+//Indices2
+if(header.vertex_weight2_index_offset>0)
+{
+FSeek(header.vertex_weight2_index_offset);
+ushort indexes2[header.vertex_position_count]<fgcolor=0x40aacc>;
+};
+
+//VertexColors
+if(header.vertex_colour_offset>0)
+{
+FSeek(header.vertex_colour_offset);
+RGBA vertex_colors[header.vertex_position_count]<fgcolor=0x808000>;
+};
+
+//UV
+FSeek(header.vertex_texcoord_offset);
+UV tex_coord[header.vertex_position_count]<fgcolor=0x805050>;
+
+
+//Materials
+FSeek(header.material_offset);
+Material materials[header.material_count]<optimize=false,fgcolor=0xaf75c0>;
