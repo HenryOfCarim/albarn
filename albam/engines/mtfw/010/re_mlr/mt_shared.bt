@@ -1,0 +1,203 @@
+//------------------------------------------------
+//--- 010 Editor v11.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+#ifndef MT_SHARED_BT
+#define MT_SHARED_BT
+
+// Basic types
+typedef ubyte bool;
+typedef ubyte u8;
+typedef byte s8;
+typedef short s16;
+typedef ushort u16;
+typedef int s32;
+typedef uint u32;
+typedef int64 s64;
+typedef uint64 u64;
+typedef hfloat f16;
+typedef float f32;
+
+// Globals
+local bool gIs64Bit = true;
+
+// Vertex types
+/* 1 f32 */
+/* 2 f16 */
+/* 3 s16 */
+/* 4 u16 */
+/* 5 fs16 */
+typedef struct 
+{
+    u16 Value;
+} fs16 <read=fs16ToString>;
+
+string fs16ToString( fs16& value ) {
+    string s;
+    SPrintf( s, "%f", (float)value.Value / 32767.0f );
+    return s;
+}
+
+/* 6 fu16 */
+typedef struct 
+{
+    u16 Value;
+} fu16 <read=fu16ToString>;
+
+string fu16ToString( fu16& value ) {
+    string s;
+    SPrintf( s, "%f", (float)value.Value / 65535.0f );
+    return s;
+}
+
+/* 7 s8 */
+/* 8 u8 */
+/* 9 fs8 */
+typedef struct 
+{
+    u8 Value;
+} fs8 <read=fs8ToString>;
+
+string fs8ToString( fs8& value ) {
+    string s;
+    SPrintf( s, "%f", ( (float)value.Value - 127.0f ) / 127.0f );
+    return s;
+}
+
+/* 10 fu8 */
+typedef struct 
+{
+    u8 Value;
+} fu8 <read=fu8ToString>;
+
+string fu8ToString( fu8& value ) {
+    string s;
+    SPrintf( s, "%f", (float)value.Value / 255.0f );
+    return s;
+}
+
+/* 11 vec432 */
+// TODO
+typedef struct 
+{
+    //u32 Value;
+    u8 X, Y, Z, W;
+} vec432 <read=vec432ToString>;
+
+string vec432ToString( vec432& value ) {
+    string s;
+    SPrintf( s, "%f,%f,%f,%f", 
+        (float)value.X / 255.0f,
+        (float)value.Y / 255.0f,
+        (float)value.Z / 255.0f,
+        (float)value.W / 255.0f );
+    return s;
+}
+
+/* 12 TODO */
+/* 13 color8 */
+typedef u8 color8;
+
+/* 14 color32 */
+typedef struct
+{
+    u8 R, G, B, A;
+} color32 <read=color32ToString>;
+
+string color32ToString( color32& value ) {
+    string s;
+    SPrintf( s, "%d,%d,%d,%d", value.R, value.G, value.B, value.A );
+    return s;
+}
+
+// Common types
+typedef struct
+{
+    f32 X;
+    f32 Y;
+    f32 Z;
+} SVec3;
+
+typedef struct
+{
+    f32 X;
+    f32 Y;
+    f32 Z;
+    f32 W;
+} SVec4;
+
+typedef struct 
+{
+    SVec4 Rows[4];
+} SMtx44;
+
+typedef struct
+{
+    if ( gIs64Bit )
+    {
+        u64 Value;
+    }
+    else
+    {
+        u32 Value;
+    }
+} SNativeInt <read=SNativeIntToString>;
+
+string SNativeIntToString(SNativeInt& v)
+{
+    string s = "";
+    SPrintf( s, "%08X", v.Value );
+    return s;
+}
+
+typedef struct
+{
+    SVec3 Center;
+    f32 Radius;
+} SSphere;
+
+typedef struct
+{
+    SVec4 Min;
+    SVec4 Max;
+} SBoundingBox;
+
+
+#include "mt_shared.generated.bt"
+
+string rShaderObjectHashToString( rShaderObjectHash& hash )
+{
+    // mask value to fix erronous hashes (they include index)
+    local u32 tmp = ((u32)hash & 0x000FFFFF);
+    local rShaderObjectHash tmp2 = (rShaderObjectHash)tmp;
+    local string s = EnumToString( tmp2 );
+    if ( s == "" )
+        SPrintf( s, "0x%08X", tmp2 );
+    else
+        s = SubStr( s, Strlen( "SHADER_" ) );
+    return s;
+}
+
+typedef struct
+{
+    u32 Index : 12;
+    rShaderObjectHash Hash : 20;
+} rShaderObjectId <read=rShaderObjectIdToString>;
+
+string rShaderObjectIdToString( rShaderObjectId& id )
+{
+    string s = "";
+    SPrintf( s, "%s (%d)", EnumToString( id.Hash ), id.Index );
+    return s;
+}
+
+#endif

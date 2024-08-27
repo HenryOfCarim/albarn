@@ -11,23 +11,93 @@
 //   History: 
 //------------------------------------------------
 
-struct FrameData
+enum<ubyte> USAGE // MOTION_PARAM::USAGE /* int */
 {
-    ubyte    buffer_type;//BufferType
-    ubyte    usage;//Usage
-    ubyte    joint_type;//JoinType
-    ubyte    bone_index;//boneID
-    float    unk_01;// weight ?
-    uint     buffer_size;//BufferSize
-    uint     buffer_offset;//BufferOffset
-    float    unk_reference_data[4];//BufferRef
+	U_QUATERNION = 0x0,
+	U_TRANSLATE = 0x1,
+	U_SCALE = 0x2,
+	U_NULL_QUATERNION = 0x3,
+	U_NULL_TRANSLATE = 0x4,
+	U_NULL_SCALE = 0x5,
+};
+
+enum<ubyte> TYPE //MOTION_PARAM::TYPE /* int */ probably non correct
+{ 
+	T_UNKNOWN = 0x0,
+	T_VECTOR3 = 0x1,
+	T_VECTOR3_CONST = 0x2,
+	T_QUATERNION3 = 0x3,
+	T_QUATERNION3_CONST = 0x4,
+	T_HERMITE3 = 0x5,
+	T_POLAR3KEY = 0x6,
+	T_POLAR3 = 0x7,
+	T_SMALLEST3 = 0x8,
+	T_LINEARKEY = 0x9,
+};
+
+struct Vec3
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct Vec4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct LMTVec3Frame
+{
+    Vec3 frames;
+};
+
+struct LMTVec3Frame_9
+{
+    Vec3 frames;
+    uint duration;
+};
+
+struct LMTQuat3Frame
+{
+    Vec3 frames;
+};
+
+struct LMTQuatFramev14
+{
+    uint var1;
+    uint var2;
+};
+
+
+
+struct FrameData // MOTION_PARAM
+{
+    TYPE     buffer_type;//BufferType type
+    USAGE    usage;//Usage usage
+    ubyte    joint_type;//JoinType jnt_type
+    ubyte    bone_index;//boneID jnt_no
+    float    weight;// weight ?
+    uint     buffer_size;//BufferSize param_size
+    uint     buffer_offset;//BufferOffset pparam 
+    Vec4     value;//BufferRef
     local int64 checkpoint = FTell();
     if(buffer_size>0)
     {
         FSeek(buffer_offset);
         struct
         {
-            ubyte   data[buffer_size];
+            switch(buffer_type)
+            {
+                case 2: LMTVec3Frame frames_2[(buffer_size/12)]<fgcolor=0xe5e5b2>; break;
+                case 4: LMTQuat3Frame frames_4[(buffer_size/12)]; break;
+                case 6: LMTQuatFramev14 frames_6[(buffer_size/8)]<fgcolor=0xff8090>;break;
+                case 9: LMTVec3Frame_9 frames_9[(buffer_size/16)]; break;
+            };
+            //ubyte   data[buffer_size];
         }frame_data_body<fgcolor=cRed>;
     };
     FSeek(checkpoint);
@@ -52,18 +122,16 @@ struct SFX
 };
 
 
-struct Track
+struct Track // SEQUENCE_INFO
 {
     uint     ofs_frame; //Offset
     uint     num_bones; //BoneCount
     uint     num_frames; //FrameCount
     float    unk_01[9]; //LoopFrame (one uint)
-    uint     unk_02[16]; 
+    SFX      sfx[32]<fgcolor=0xa77856>;
     uint     count_01;
     uint     ofs_buffer_01;
-    //uint16 unk_02[6];
-    SFX      sfx[32]<fgcolor=0xa77856>;
-    //uint16 unk_03[24];
+    SFX      sfx1[32]<fgcolor=0xa77856>;
     uint     count_02;
     uint     ofs_buffer_02;
     local uint64 savepos = FTell();
@@ -86,7 +154,7 @@ struct Track
     FSeek(savepos);
 };
 
-typedef struct
+typedef struct AnimBlock //MOTION_INFO
 {
     uint offset<fgcolor=0x855080>;
     if (offset > 0)
@@ -96,9 +164,9 @@ typedef struct
         Track    track<fgcolor=0xabbb82>;
         FSeek(checkpoint);
     };
-}AnimBlock;
+};
 
-struct LMTHeader
+struct LMTHeader // MOTION_LIST_HDR
 {
     char     id_magic[4];
     ushort   version;

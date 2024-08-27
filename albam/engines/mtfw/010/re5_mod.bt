@@ -245,7 +245,7 @@ struct RCN_VERTEX /* size : 0x00000010 */
 	uint j3 : 8; // 0x0000000c
 };
 
-struct RCN_HEADER // Recalculate Normals  size : 0x00000020
+typedef struct RCN_HEADER // Recalculate Normals  size : 0x00000020
 {
     uint ptri;
     uint pvtx;
@@ -255,6 +255,10 @@ struct RCN_HEADER // Recalculate Normals  size : 0x00000020
 	uint tbl_num; // 0x00000014
 	uint parts; // 0x00000018
 	uint reserved ; // 0x0000001c
+    RCN_TABLE rcn_table[tri_num]<fgcolor=0x808000>;
+    RCN_VERTEX rcn_vertex[vtx_num]<fgcolor=0x800080>;
+    RCN_TRIANGLE rcn_triangle[tri_num]<fgcolor=0x108010>;
+    
 };
 
 struct MODHeader // rModel::MODEL_HDR size : 0x00000090
@@ -386,7 +390,7 @@ struct MaterialData{
     uint        glossmap;
 };
 
-struct Vtx0 // non_skin
+struct VFNonSkin // non_skin
 {
     float position_x;
     float position_y;
@@ -407,7 +411,27 @@ struct Vtx0 // non_skin
     hfloat uv3_y;
 };
 
-struct Vtx
+struct VFNonSkinCol // non_skin
+{
+    float position_x;
+    float position_y;
+    float position_z;
+    ubyte normal_x;
+    ubyte normal_y;
+    ubyte normal_z;
+    ubyte normal_w;
+    ubyte tangent_x;
+    ubyte tangent_y;
+    ubyte tangent_z;
+    ubyte tangent_w;
+    hfloat uv_x;
+    hfloat uv_y;
+    hfloat uv2_x;
+    hfloat uv2_y;
+    VectorF4 RGBA;
+};
+
+struct VFSkin
 {
     short position_x;
     short position_y;
@@ -439,7 +463,7 @@ struct Vtx
     hfloat uv2_y;
 };
 
-struct Vtx5
+struct VFSkinEx
 {
     short position_x;
     short position_y;
@@ -503,7 +527,7 @@ typedef struct // rModel::PRIMITIVE_INFO  size : 0x00000034
     uint    disp : 8; // 0x00000004
     uint    lod : 8;
     uint    alphapri : 8;
-    uint    vertex_format : 8; // weight_num : 8
+    uint    max_bones_per_vertex : 8; // weight_num : 8
     uint    vertex_stride : 8; // 0x00000008
     uint    vertex_stride_2 : 8;
     uint    connective : 8 ; // probably related PRIMITIVE_INFO_CONNECT but values aren't right
@@ -516,7 +540,7 @@ typedef struct // rModel::PRIMITIVE_INFO  size : 0x00000034
     uint    sort : 1;
     uint    num_vertices : 16; //vertex_num : 16 0x0000000c
     uint    vertex_position_end : 16; // max_index : 16 0x0000000c
-    uint    vertex_position_2; //  vertex_ofs 0x00000010
+    uint    vertex_position; //  vertex_ofs 0x00000010 num vertices before
     uint    vertex_offset; // vertex_base 0x00000014
     uint    vertex_offset_2; // vertex_base2 0x00000018
     uint    face_position; // index_ofs 0x0000001c
@@ -526,30 +550,27 @@ typedef struct // rModel::PRIMITIVE_INFO  size : 0x00000034
     SHADER_VDECL vdecl : 8; // 0x00000028
     uint min_index : 16; // min_index : 16 // 0x00000028
     uint boundary_num: 8;//was 16 but it's doesn't work with  envelope 0x0000002c 
-    uint envelope : 8; //0x0000002c
+    uint envelope : 8; //0x0000002c bone palette id
     uint rcn_base : 16;//0x0000002c
     uint boundary; //0x00000030 pointer to weight bounds?
     local uint checkpoint = FTell();
-    FSeek(header.offset_buffer_vertices + (vertex_position_2 * vertex_stride) + vertex_offset);
+    FSeek(header.offset_buffer_vertices + (vertex_position * vertex_stride) + vertex_offset);
     struct
     {
-        switch(vertex_format) 
+        switch(materials[material_no].param32.vtype) //(vertex_format) 
         {
-            case 0  : Vtx0 vtx0[mesh.num_vertices]<fgcolor=0xff8090>; break;
-            case 1  : Vtx vtx1[mesh.num_vertices]<fgcolor=0xe5e5b2>; break;
-            case 2  : Vtx vtx2[mesh.num_vertices]<fgcolor=0xcbbe86>; break;
-            case 3  : Vtx vtx3[mesh.num_vertices]<fgcolor=0xa3a31a>; break;
-            case 4  : Vtx vtx4[mesh.num_vertices]<fgcolor=0x565e0b>; break;
-            case 5  : Vtx5 vtx5[mesh.num_vertices]<fgcolor=0xffd200>; break;
-            case 6  : Vtx5 vtx6[mesh.num_vertices]<fgcolor=0xeca71a>; break;
-            case 7  : Vtx5 vtx7[mesh.num_vertices]<fgcolor=0x4a170e>; break;
-            case 8  : Vtx5 vtx8[mesh.num_vertices]<fgcolor=cPurple>; break;
+            case 0  : VFSkin vf_skin[mesh.num_vertices]<fgcolor=0xff8090>; break;
+            case 1  : VFSkinEx vf_skin_ex[mesh.num_vertices]<fgcolor=0xe5e5b2>; break;
+            case 2  : VFNonSkin vf_non_skin[mesh.num_vertices]<fgcolor=0xcbbe86>; break;
+            case 3  : VFNonSkinCol vf_non_skin_col[mesh.num_vertices]<fgcolor=0xa3a31a>; break;
+            case 4  : VFSkin vf_shape[mesh.num_vertices]<fgcolor=0x565e0b>; break;
+            case 5  : VFSkin vf_skin_col[mesh.num_vertices]<fgcolor=0xffd200>; break;
 
         }
     }vertices;
     if (vertex_stride_2>0)
     {
-        FSeek(header.offset_buffer_vertices_2 + (vertex_position_2 * vertex_stride_2) + vertex_offset_2);
+        FSeek(header.offset_buffer_vertices_2 + (vertex_position * vertex_stride_2) + vertex_offset_2);
         switch(vertex_stride_2) 
         {
             case 8 :  SVtx8 vtx2_8[num_vertices]<fgcolor=0x4000c0>; break;
@@ -560,7 +581,7 @@ typedef struct // rModel::PRIMITIVE_INFO  size : 0x00000034
     FSeek(header.offset_buffer_indices + face_offset * 2 + face_position * 2); // some bugged meshes use wrong face_offset
     struct
     {
-        short idx;//idx[index_num];
+        ushort idx[index_num];
     }indices;
     FSeek(checkpoint);
 }Mesh;
@@ -591,12 +612,12 @@ struct unk_buff_2
 //Parsing//
 MODHeader header<fgcolor=0x008000>;
 RCN_HEADER rcn<fgcolor=0x805050>; // datablock that exists only for some cut-scene heads
-struct
+/*struct
 {
     RCN_TABLE rcn_tables[rcn.tbl_num]<fgcolor=0x808000>;
     RCN_VERTEX rcn_vtxs[rcn.vtx_num]<fgcolor=0x800080>;
     RCN_TRIANGLE rcn_tris[rcn.tri_num]<fgcolor=0x108010>;
-}rcn_body;
+}rcn_body;*/
 if (header.num_bones > 0)
 {
     FSeek(header.offset_bones);

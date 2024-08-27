@@ -1,0 +1,49 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+
+struct CubeFace
+{
+    float   field_00;
+    float   negative_co[3];
+    float   positive_co[3];
+    float   uv[2];
+};
+
+typedef struct TEX157Header
+{
+    char    id_magic[4];
+    uint32  packed_data_1;
+    uint32  packed_data_2;
+    uint32  packed_data_3;
+
+    local uint32    reserved_01 = (packed_data_1 >>16) & 0x00ff;
+    local uint32    shift = (packed_data_1 >>24) & 0x000f;
+    local uint32    dimension = (packed_data_1 >>28) & 0x00ff;
+
+    local uint32    num_mipmaps_per_image = packed_data_2 & 0x3f;
+    local uint32    width = (packed_data_2 >> 6) & 0x1fff;
+    local uint32    height = (packed_data_2 >> 19) & 0x1fff;
+
+    local uint32    num_images = packed_data_3 & 0xff;
+    local uint32    compression_format = (packed_data_3 >> 8) & 0xff;
+    local uint32    constant = (packed_data_3 >> 16) & 0x1fff;
+    local uint32    reversed_02 = (packed_data_3 >>29) & 0x003;
+    if (num_images == 6)
+    {
+        CubeFace cube_face[3]<fgcolor=0xaf75c0>;
+    };
+    uint32 mipmap_offsets[num_mipmaps_per_image * num_images];
+};
+
+TEX157Header header;

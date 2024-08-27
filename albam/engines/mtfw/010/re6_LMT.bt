@@ -14,12 +14,101 @@ local uint64 i<hidden=true>;
 local uint64 j<hidden=true>;
 local int64 savepos <hidden=true>;
 
+struct Vec3
+{
+    float    x;
+    float    y;
+    float    z;
+};
+
+struct LMTVec3
+{
+    Vec3 position;
+};
+
+struct LMTVec3Frame
+{
+    Vec3     position;
+};
+
+struct LMTVec3Frame16
+{
+    Vec3    position;
+    uint    realframe;
+};
+
+struct LMTVec3Frame_9
+{
+    Vec3     position;
+    uint     duration;
+};
+
+struct LMTQuatized16Vec3
+{
+  ushort    position[3];
+  ushort    relframe;  
+};
+
+
+struct LMTQuatized32Quat
+{
+    uint    var1;
+};
+
+struct LMTQuatized8Vec3
+{
+    ubyte position[3];
+    ubyte realframe;
+};
+
+struct LMTQuat3Frame
+{
+    Vec3     position;
+};
+
+struct LMTQuatFramev14
+{
+    uint     var1;
+    uint     var2;
+};
+
+struct LMTXWQuat
+{
+    uint     var1;
+};
+
+struct LMTYWQuat
+{
+    uint    var1;
+};
+
+struct LMTZWQuat
+{
+    uint     var1;
+};
+
+struct LMTQuatized11Quat
+{
+    ushort   var1;
+    ushort   var2;
+    ushort   var3;
+};
+
+struct LMTQuatized9Quat
+{
+    ubyte    var1;
+    ubyte    var2;
+    ubyte    var3;
+    ubyte    var4;
+    ubyte    var5;
+};
+
 struct LMTHeader
 {
     char id_magic[4];
     ushort version; //67 for 211
     ushort num_blocks;
-    uint block_offsets[num_blocks]; //there is 0 fill after
+    //uint block_offsets[num_blocks]; //there is 0 fill after
 };
 
 struct SFX
@@ -27,31 +116,64 @@ struct SFX
     uint16 sfx_id;
 };
 
-struct Track //LMTAniBlockHeader
+struct FrameData // MOTION_PARAM
 {
-    uint ofs_frame; //Offset
-    uint num_bones; //BoneCount
-    uint num_frames; //FrameCount
-    uint loop_frame; //LoopFrame (one uint)
-    float unk_01[8]; 
-    //uint unk_02[16]; 
-    uint16 unk_00;
-    uint16 count_01;
-    uint ofs_buffer_01;
-    uint ofs_buffer_02;
+    ubyte    buffer_type;//BufferType
+    ubyte    usage;//Usage
+    ubyte    joint_type;//JoinType
+    ubyte    bone_index;//boneID
+    float    weight;// weight ?
+    uint     buffer_size;//BufferSize
+    uint     buffer_offset;//BufferOffset
+    float    unk_reference_data[4];//BufferRef
+    uint     unk_ofs;
+    local int64 checkpoint = FTell();
+    if(buffer_size>0)
+    {
+        struct
+        {
+            FSeek(buffer_offset);
+            switch(buffer_type)
+            {
+                case 1:     LMTVec3             frames_01<fgcolor=0xff5682>; break; //one frame 
+                case 2:     LMTVec3Frame        frames_02[(buffer_size/12)]<fgcolor=0xffb156>; break;
+                case 3:     LMTVec3Frame16      frames_03[(buffer_size/16)]<fgcolor=0xffc156>; break; //the code is unclear, probably size = 16
+                case 4:     LMTQuatized16Vec3   frames_04[(buffer_size/8)]<fgcolor=0xccb345>; break; // different in RE5
+                case 5:     LMTQuatized8Vec3    frames_05[(buffer_size/4)]<fgcolor=0xa2ad3b>; break; // different in RE5
+                case 6:     LMTQuatFramev14     frames_06[(buffer_size/8)]<fgcolor=0xff8090>; break;
+                case 7:     LMTQuatized32Quat   frames_07[(buffer_size/4)]<fgcolor=0x5b6121>; break;
+                case 9:     LMTVec3Frame16      frames_09[(buffer_size/16)]<fgcolor=0xe0ff5f>; break;
+                case 11:    LMTXWQuat           frames_11[(buffer_size/4)]<fgcolor=0x4db3cf>; break;
+                case 12:    LMTYWQuat           frames_12[(buffer_size/4)]<fgcolor=0x3f92a9>; break;
+                case 13:    LMTZWQuat           frames_13[(buffer_size/4)]<fgcolor=0x354ddf>; break;
+                case 14:    LMTQuatized11Quat   frames_14[(buffer_size/6)]<fgcolor=0x435393>; break;
+                case 15:    LMTQuatized9Quat    frames_15[(buffer_size/5)]<fgcolor=0x1a268d>; break;
+            };
+            //ubyte   data[buffer_size];
+        }frame_data_body<fgcolor=cRed>;
+    };
+    FSeek(checkpoint);
 };
 
-struct FrameData
+struct Track //LMTAniBlockHeader
 {
-    ubyte buffer_type;//BufferType
-    ubyte usage;//Usage
-    ubyte joint_type;//JoinType
-    ubyte bone_index;//boneID
-    float weight;// weight ?
-    uint buffer_size;//BufferSize
-    uint buffer_offset;//BufferOffset
-    float unk_reference_data[4];//BufferRef
-    uint unk_ofs;
+    uint     ofs_frame; //Offset
+    uint     num_bones; //BoneCount
+    uint     num_frames; //FrameCount
+    uint     loop_frame; //LoopFrame (one uint)
+    float    unk_01[8]; 
+    //uint unk_02[16]; 
+    uint16   unk_00;
+    uint16   count_01;
+    uint     ofs_buffer_01;
+    uint     ofs_buffer_02;
+    local uint64 savepos = FTell();
+    struct
+    {
+        FSeek(ofs_frame);
+        FrameData   frame_data[num_bones]<optimize=false,fgcolor=cGreen>;
+    }frames;
+    FSeek(savepos);
 };
 
 struct UnkFrameBlock
@@ -64,8 +186,23 @@ struct UnkTrackBlock
     uint32 unk_00[80];
 };
 
+typedef struct AnimBlock //MOTION_INFO
+{
+    uint offset<fgcolor=0x855080>;
+    if (offset > 0)
+    {
+        local uint64 checkpoint = FTell();
+        FSeek(offset);
+        Track    track<fgcolor=0xabbb82>;
+        FSeek(checkpoint);
+    };
+};
 
 LMTHeader lmt_header<fgcolor=cYellow>;
+AnimBlock anim_block[lmt_header.num_blocks]<optimize=false>;
+
+/*
+
 struct
 {
     for (i=0; i<lmt_header.num_blocks; i++)
