@@ -3,8 +3,8 @@
 //
 //      File: 
 //   Authors: HenryVIII
-//   Version: 0.1
-//   Purpose: Parsing Resident evil mod 210 mesh format
+//   Version: 0.2
+//   Purpose: Parsing Resident evil mod 210-211 mesh format
 //  Category: Modding
 // File Mask: .mod
 //  ID Bytes: 4D 4F 44 00 D2
@@ -44,11 +44,14 @@ struct MODHeader
     float box_max_y;
     float box_max_z;
     float box_max_w;
-    uint unk_01;
-    uint unk_02;
-    uint unk_03;
-    uint unk_04;
-    uint num_weight_bounds_210;
+    uint middist;
+    uint lowdist;
+    uint light_group;
+    ubyte strip_type;
+    ubyte memory;
+    ushort reserved;
+    if (version == 210 || 212)
+        uint num_weight_bounds;
 };
 
 struct Bone
@@ -336,8 +339,8 @@ struct IANonSkinTBN_4M
 // bridge "line" geometry
 struct IASkinBridge1wt
 {
-    Vector4S2 position;
-    ubyte     bone_indices[1];
+    Vector3S2 position;
+    ushort     bone_indices[1];
     Vector4U1 normal;
 };
 
@@ -596,7 +599,7 @@ typedef struct
     ushort mesh_index;
     ushort  min_index;
     ushort  man_index;
-    float hash;
+    uint hash;
     local uint checkpoint = FTell();
         FSeek(header.offset_buffer_vertices + vertex_offset + (vertex_position * vertex_stride));
     struct
@@ -675,10 +678,19 @@ if (header.num_bones > 0)
 };
 FSeek(header.offset_groups);
 Group groups[header.num_groups]<fgcolor=0xaf75c0>;
-MaterialName material_names[header.num_materials_names];
+if(header.version == 210 || 212)
+    MaterialName material_names[header.num_materials_names];
+if(header.version == 211 || 212)
+    uint32 material_hash[header.num_materials_names];
 
 struct{
     FSeek(header.offset_meshes);
     Mesh mesh[header.num_meshes]<optimize=false,fgcolor=0x00aaff>;
 }meshes;
-WeightBound weight_bound[header.num_weight_bounds_210]<fgcolor=0x50c050>;
+if (header.version == 211)
+{
+    uint num_weight_bounds;
+    WeightBound weight_bound[num_weight_bounds]<fgcolor=0x50c050>;
+};
+if (header.version == 210 || 212)
+    WeightBound weight_bound[header.num_weight_bounds]<fgcolor=0x50c050>;
