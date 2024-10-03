@@ -188,8 +188,8 @@ struct Matrix
 
 struct MtSphere
 {
-    VectorF3    pos;
-    float         r;
+    VectorF3    position;
+    float         radius;
 };
 
 struct MtAABB // size : 0x00000020
@@ -201,7 +201,7 @@ struct MtAABB // size : 0x00000020
 struct MtOBB // size : 0x00000050
 {
     Matrix      coord;
-    VectorF4   extent; // VectorF3 but last 4bytes are a filler
+    VectorF4    extent; // VectorF3 but last 4bytes are a filler
 };
 
 struct MODEL_INFO //rModel::MODEL_INFO  size : 0x00000010 
@@ -539,7 +539,7 @@ typedef struct // rModel::PRIMITIVE_INFO  size : 0x00000034
     uint    shadow_recv : 1;
     uint    sort : 1;
     uint    num_vertices : 16; //vertex_num : 16 0x0000000c
-    uint    vertex_position_end : 16; // max_index : 16 0x0000000c
+    uint    max_index : 16; //  vertex_position_end: 16 0x0000000c
     uint    vertex_position; //  vertex_ofs 0x00000010 num vertices before
     uint    vertex_offset; // vertex_base 0x00000014
     uint    vertex_offset_2; // vertex_base2 0x00000018
@@ -548,7 +548,7 @@ typedef struct // rModel::PRIMITIVE_INFO  size : 0x00000034
     uint    face_offset; //index_base // 0x00000024
     SHADER_VDECL vdeclbase : 8; // 0x00000028
     SHADER_VDECL vdecl : 8; // 0x00000028
-    uint min_index : 16; // min_index : 16 // 0x00000028
+    uint min_index : 16; // vertex_position : 16 // 0x00000028
     uint boundary_num: 8;//was 16 but it's doesn't work with  envelope 0x0000002c 
     uint envelope : 8; //0x0000002c bone palette id
     uint rcn_base : 16;//0x0000002c
