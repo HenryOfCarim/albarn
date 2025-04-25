@@ -183,7 +183,10 @@ struct VectorF2
 
 struct Matrix
 {
-    VectorF4 m[4];
+    VectorF4 row1;
+    VectorF4 row2;
+    VectorF4 row3;
+    VectorF4 row4;
 };
 
 struct MtSphere
@@ -622,8 +625,8 @@ if (header.num_bones > 0)
 {
     FSeek(header.offset_bones);
     Bone bones[header.num_bones]<fgcolor=0x008080>; 
-    Matrix4x4 local_transform[header.num_bones]<bgcolor=0x788673>;
-    Matrix4x4 world_transform[header.num_bones]<bgcolor=0x3d340c>;
+    Matrix parent_space_matrices[header.num_bones]<bgcolor=0x788673>;
+    Matrix inverse_space_matrices[header.num_bones]<bgcolor=0x3d340c>;
     BoneAnimMapping bone_anim_maping<bgcolor=0x4d1220>;
     BoneMapping bones_mapping[header.num_bone_mappings]<optimize=false>;
 };
