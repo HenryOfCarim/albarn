@@ -21,6 +21,21 @@ struct Vec3
     float    z;
 };
 
+struct Vec4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct Attribute
+{
+    uint16 group;
+    ubyte frame;
+};
+
+
 struct LMTVec3
 {
     Vec3 position;
@@ -116,6 +131,13 @@ struct SFX
     uint16 sfx_id;
 };
 
+struct FrameBound
+{
+    float addin[4];
+    float offset[4];
+};
+
+
 struct FrameData // MOTION_PARAM
 {
     ubyte    buffer_type;//BufferType
@@ -125,9 +147,13 @@ struct FrameData // MOTION_PARAM
     float    weight;// weight ?
     uint     buffer_size;//BufferSize
     uint     buffer_offset;//BufferOffset
-    float    unk_reference_data[4];//BufferRef
-    uint     unk_ofs;
+    Vec4     reference_data;//BufferRef
+    uint     ofs_bounds;
     local int64 checkpoint = FTell();
+    FSeek(ofs_bounds);
+    FrameBound frame_bounds<bgcolor=0xcaca20>;
+    FSeek(checkpoint);
+    
     if(buffer_size>0)
     {
         struct
@@ -155,30 +181,67 @@ struct FrameData // MOTION_PARAM
     FSeek(checkpoint);
 };
 
+
+struct BlobChild
+{
+    uint16 test[4];
+};
+
+struct Attr
+{
+    uint group;
+    uint frame;
+};
+
+typedef struct Bloab
+{
+    uint16 event_id[32];
+    uint unk_num;
+    uint unk_ofs<bgcolor=0x885020>;
+    uint16 event_id_00[32];
+    uint unk_num_00;
+    uint unk_ofs_00<bgcolor=0x885020>;
+    uint16 event_id_01[32];
+    uint unk_num_01;
+    uint unk_ofs_01<bgcolor=0x885020>;
+    uint16 event_id_02[32];
+    uint unk_num_02;
+    uint unk_ofs_02<bgcolor=0x885020>;
+    FSeek(unk_ofs);
+    Attr attributes[unk_num]<bgcolor=0x8050c0>;
+    FSeek(unk_ofs_00);
+    Attr attributes_00[unk_num_00]<bgcolor=0x8050c0>;
+    FSeek(unk_ofs_01);
+    Attr attributes_01[unk_num_01]<bgcolor=0x8050c0>;
+    FSeek(unk_ofs_02);
+    Attr attributes_02[unk_num_01]<bgcolor=0x8050c0>;
+};
+
 struct Track //LMTAniBlockHeader
 {
     uint     ofs_frame; //Offset
     uint     num_bones; //BoneCount
     uint     num_frames; //FrameCount
-    uint     loop_frame; //LoopFrame (one uint)
-    float    unk_01[8]; 
-    //uint unk_02[16]; 
-    uint16   unk_00;
-    uint16   count_01;
+    uint     loop_frame; //LoopFrame
+    Vec3     init_position;
+    float    padding;
+    Vec4     init_quaternion;
+    ubyte    flags[4];
     uint     ofs_buffer_01;
     uint     ofs_buffer_02;
     local uint64 savepos = FTell();
+    if (ofs_buffer_01>0)
+    {
+        FSeek(ofs_buffer_01);
+        Bloab  col_attributes<fgcolor=0x577806>;
+    };
+    FSeek(savepos);
     struct
     {
         FSeek(ofs_frame);
         FrameData   frame_data[num_bones]<optimize=false,fgcolor=cGreen>;
     }frames;
     FSeek(savepos);
-};
-
-struct UnkFrameBlock
-{
-    float unk_00[8];
 };
 
 struct UnkTrackBlock
@@ -200,60 +263,3 @@ typedef struct AnimBlock //MOTION_INFO
 
 LMTHeader lmt_header<fgcolor=cYellow>;
 AnimBlock anim_block[lmt_header.num_blocks]<optimize=false>;
-
-/*
-
-struct
-{
-    for (i=0; i<lmt_header.num_blocks; i++)
-    {
-            if (lmt_header.block_offsets[i] > 0)
-            {
-                FSeek(lmt_header.block_offsets[i]);
-                struct
-                {
-                    Track track<fgcolor=0xabbb82>;
-                    //savepos = FTell();
-                    struct
-                    {
-                        FSeek(track.ofs_frame);
-                        savepos = 0;
-                        for(j=0; j<track.num_bones; j++)
-                        {
-                            if (savepos>0)
-                            {
-                                FSeek(savepos);    
-                            };
-                            FrameData frame_data<fgcolor=cGreen>;
-                            
-                            savepos = FTell();
-                            if(frame_data.buffer_size>0)
-                            {
-                                FSeek(frame_data.buffer_offset);
-                                struct
-                                {
-                                    ubyte data[frame_data.buffer_size];
-                                }frame_data_body<fgcolor=cRed>;
-                            };
-                            if(frame_data.unk_ofs>0)
-                            {
-                                FSeek(frame_data.unk_ofs);
-                                UnkFrameBlock test<bgcolor=0x20ac40>;
-                            };
-                        };
-                    }frames;
-                    
-                    if (track.ofs_buffer_01>0)
-                    {
-                        FSeek(track.ofs_buffer_01);
-                        UnkTrackBlock test<bgcolor=0x4570ca>;
-                        //Atk atk_hit[track.count_01]<fgcolor=0x577806>;
-                        //FSeek(track.ofs_buffer_02);
-                        //Atk2 atk_sfx[track.count_02]<fgcolor=0x977806>;
-                        //uint32 test;
-                    };  
-                          
-                }anim_block;
-            };
-    };
-}anim_blocks;
