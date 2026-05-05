@@ -614,7 +614,10 @@ struct unk_buff_2
 
 //Parsing//
 MODHeader header<fgcolor=0x008000>;
-RCN_HEADER rcn<fgcolor=0x805050>; // datablock that exists only for some cut-scene heads
+if (header.version == 156)
+{
+    RCN_HEADER rcn<fgcolor=0x805050>; // datablock that exists only for some cut-scene heads
+}
 /*struct
 {
     RCN_TABLE rcn_tables[rcn.tbl_num]<fgcolor=0x808000>;

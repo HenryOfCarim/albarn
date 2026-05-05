@@ -12,25 +12,67 @@
 //------------------------------------------------
 local uint64 i<hidden=true>;
 
+enum TEXTURE_TYPE //rTexture::TYPE
+{
+	TYPE_UNDEFINED = 0x0,
+	TYPE_1D = 0x1,
+	TYPE_2D = 0x2,
+	TYPE_2D_CUBE = 0x3,
+	TYPE_3D = 0x4,
+};
+
+
+enum TEXTURE_ENCODE_TYPE //cTrans::TextureBase::ENCODE_TYPE
+{
+	ENCODE_NONE = 0x0,
+	ENCODE_RGBI = 0x1,
+	ENCODE_RGBY = 0x2,
+	ENCODE_RGBN = 0x3,
+	ENCODE_PAL8 = 0x4,
+};
+
+enum TEXTURE_ATTR //rTexture::TATTR
+{
+	TATTR_FILLMARGIN = 0x1,
+	TATTR_GRAYSCALE = 0x2,
+	TATTR_NUKI = 0x4,
+	TATTR_DITHER = 0x8,
+	TATTR_RGBIENCODED = 0x10,
+};
+
+struct TEXTURE_SHFACTOR //rTexture::SHFACTOR /* size : 0x0000006c */
+{
+	float r[9] /* public */; // 0x00000000
+	float g[9] /* public */; // 0x00000024
+	float b[9] /* public */; // 0x00000048
+};
+
+
+
 struct {
-    char idmagic[4];
-    ushort version;
-    ushort revision;
-    ubyte num_mipmaps;
-    ubyte image_count;
-    ubyte unk_01;
-    ubyte unk_02;
-    ushort width;
-    ushort height;
-    uint reserved;
-    char compression[4];
-    float red;
-    float green;
-    float blue;
-    float alpha;
+    char    magic[4]; // rTexture::HEADER /* size : 0x00000028 */
+    uint    version : 16;
+    TEXTURE_TYPE    type : 4;
+    TEXTURE_ENCODE_TYPE    endcode_type : 4;
+    uint    depend_screen : 1;
+    uint    render_target : 1;
+    uint    attr : 6 ;
+    uint    num_mipmaps : 8; // level_count 
+    uint    image_count : 8; // array_count
+    ushort  width;
+    ushort  height;
+    ushort  depth;
+    ushort  reserved;
+    char    compression[4]; //  format
+    struct{
+        float red;
+        float green;
+        float blue;
+        float alpha;
+    }range;
     if (image_count > 1) {
         struct{
-            float unk_03[27];
+            TEXTURE_SHFACTOR shfactor;
         } unk_param<fgcolor=cRed>;
     };
     uint mipmaps_offset[image_count*num_mipmaps];

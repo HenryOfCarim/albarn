@@ -14,6 +14,52 @@ local uint64 i<hidden=true>;
 local uint64 j<hidden=true>;
 local int64 savepos <hidden=true>;
 
+
+enum Attributes//nMotion::MOTION_INFO::MOTION_ATTRIBUTE : __int32
+{
+  Default = 0x0,
+  A_SCALE_GLOBAL = 0x1,
+  A_SCALE_INHERIT_WDIR = 0x2,
+  A_DIFF_MOTION = 0x4,
+  A_NON_COMPRESS = 0x80,
+};
+
+enum Type //nMotion //::MOTION_PARAM::TYPE : __int32
+{
+  T_UNKNOWN = 0x0,
+  T_VECTOR3_CONST = 0x1,
+  T_QUATERNION3_CONST = 0x2,
+  T_LINEARKEY = 0x3,
+  T_LINEARKEY_16 = 0x4,
+  T_LINEARKEY_8 = 0x5,
+  T_POLAR3KEY = 0x6,
+  T_POLAR3KEY_32 = 0x7,
+  T_VECTOR3 = 0x8,
+  T_QUATERNION4 = 0x9,
+  T_POLAR3 = 0xA,
+  T_QAXIS_X_32 = 0xB,
+  T_QAXIS_Y_32 = 0xC,
+  T_QAXIS_Z_32 = 0xD,
+  T_QUATKEY_48 = 0xE,
+  T_QUATKEY_40 = 0xF,
+  T_HERMITE3 = 0x10,
+  T_SMALLEST3 = 0x11,
+  T_PARAM_TYPE_NUM = 0x12,
+};
+
+
+enum Usage //nMotion::MOTION_PARAM::USAGE : __int32
+{
+  U_QUATERNION = 0x0,
+  U_TRANSLATE = 0x1,
+  U_SCALE = 0x2,
+  U_NULL_QUATERNION = 0x3,
+  U_NULL_TRANSLATE = 0x4,
+  U_NULL_SCALE = 0x5,
+  U_NUM = 0x6,
+};
+
+
 struct Vec3
 {
     float    x;
@@ -49,7 +95,7 @@ struct LMTVec3Frame
 struct LMTVec3Frame16
 {
     Vec3    position;
-    uint    realframe;
+    uint    duration;
 };
 
 struct LMTVec3Frame_9
@@ -61,7 +107,7 @@ struct LMTVec3Frame_9
 struct LMTQuatized16Vec3
 {
   ushort    position[3];
-  ushort    relframe;  
+  ushort    duration;  
 };
 
 
@@ -73,7 +119,7 @@ struct LMTQuatized32Quat
 struct LMTQuatized8Vec3
 {
     ubyte position[3];
-    ubyte realframe;
+    ubyte duration;
 };
 
 struct LMTQuat3Frame
@@ -131,7 +177,7 @@ struct SFX
     uint16 sfx_id;
 };
 
-struct FrameBound
+struct FrameBound // MOTION_PARAM_EX ?
 {
     float addin[4];
     float offset[4];
@@ -150,8 +196,9 @@ struct FrameData // MOTION_PARAM
     Vec4     reference_data;//BufferRef
     uint     ofs_bounds;
     local int64 checkpoint = FTell();
-    FSeek(ofs_bounds);
-    FrameBound frame_bounds<bgcolor=0xcaca20>;
+    if (ofs_bounds>0)
+        FSeek(ofs_bounds);
+        FrameBound frame_bounds<bgcolor=0x5a2a50>;
     FSeek(checkpoint);
     
     if(buffer_size>0)
@@ -182,58 +229,79 @@ struct FrameData // MOTION_PARAM
 };
 
 
-struct BlobChild
-{
-    uint16 test[4];
-};
-
 struct Attr
 {
     uint group;
     uint frame;
 };
 
-typedef struct Bloab
+
+struct SequenceInfo //SEQUENCE_INFO
 {
-    uint16 event_id[32];
-    uint unk_num;
-    uint unk_ofs<bgcolor=0x885020>;
-    uint16 event_id_00[32];
-    uint unk_num_00;
-    uint unk_ofs_00<bgcolor=0x885020>;
-    uint16 event_id_01[32];
-    uint unk_num_01;
-    uint unk_ofs_01<bgcolor=0x885020>;
-    uint16 event_id_02[32];
-    uint unk_num_02;
-    uint unk_ofs_02<bgcolor=0x885020>;
-    FSeek(unk_ofs);
-    Attr attributes[unk_num]<bgcolor=0x8050c0>;
-    FSeek(unk_ofs_00);
-    Attr attributes_00[unk_num_00]<bgcolor=0x8050c0>;
-    FSeek(unk_ofs_01);
-    Attr attributes_01[unk_num_01]<bgcolor=0x8050c0>;
-    FSeek(unk_ofs_02);
-    Attr attributes_02[unk_num_01]<bgcolor=0x8050c0>;
+    uint16 work[32];
+    uint num_seq;
+    uint ofs_seq;
+    local int64 checkpoint_02 = FTell();
+    FSeek(ofs_seq);
+    Attr attributes[num_seq]<bgcolor=0x8050c0>;
+    FSeek(checkpoint_02);
 };
+
+
+struct KeyInfo // KEYINFO_U32;
+{
+    uint unk_01;
+    uint unk_02;
+    uint unk_03;
+    uint unk_04;
+};
+
+
+typedef struct KeyframeInfo
+{
+    uint type : 8;
+    uint work : 16;
+    uint attr : 8;
+    uint num_key;
+    uint unk_ofs;
+    local int64 checkpoint_01 = FTell();
+    if (unk_ofs>0)
+    {
+        FSeek(unk_ofs);
+        KeyInfo info[num_key]<fgcolor=0x577806>;
+    };    
+    FSeek(checkpoint_01);
+
+};
+
 
 struct Track //LMTAniBlockHeader
 {
     uint     ofs_frame; //Offset
     uint     num_bones; //BoneCount
     uint     num_frames; //FrameCount
-    uint     loop_frame; //LoopFrame
+    int      loop_frame; //LoopFrame
     Vec3     init_position;
     float    padding;
     Vec4     init_quaternion;
-    ubyte    flags[4];
-    uint     ofs_buffer_01;
-    uint     ofs_buffer_02;
+    Attributes     attr:16;
+    uint     kf_num:5;
+    uint     seq_num:3;
+    uint     duplicate:3;
+    uint     reserved:5;
+    uint     ofs_buffer_01; //SEQUENCE_INFO
+    uint     ofs_buffer_02; //KEYFRAME_INFO 
     local uint64 savepos = FTell();
     if (ofs_buffer_01>0)
     {
         FSeek(ofs_buffer_01);
-        Bloab  col_attributes<fgcolor=0x577806>;
+        SequenceInfo  anim_attributes[seq_num]<optimize=false, fgcolor=0x577806>;
+    };
+    FSeek(savepos);
+    if (ofs_buffer_02>0)
+    {
+        FSeek(ofs_buffer_02);
+        KeyframeInfo keyframe_info[kf_num]<optimize=false, fgcolor=0x5778c6>;
     };
     FSeek(savepos);
     struct
@@ -244,10 +312,6 @@ struct Track //LMTAniBlockHeader
     FSeek(savepos);
 };
 
-struct UnkTrackBlock
-{
-    uint32 unk_00[80];
-};
 
 typedef struct AnimBlock //MOTION_INFO
 {

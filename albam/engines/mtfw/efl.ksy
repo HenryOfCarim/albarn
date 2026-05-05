@@ -1,6 +1,6 @@
 meta:
-  id: ccl
-  file-extension: ccl
+  id: efl
+  file-extension: efl
   endian: le
   title: MTFramework efl
   

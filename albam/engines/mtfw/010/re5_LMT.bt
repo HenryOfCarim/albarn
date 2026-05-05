@@ -11,6 +11,7 @@
 //   History: 
 //------------------------------------------------
 
+
 enum<ubyte> USAGE // MOTION_PARAM::USAGE /* int */
 {
 	U_QUATERNION = 0x0,
@@ -29,7 +30,7 @@ enum<ubyte> TYPE //MOTION_PARAM::TYPE /* int */ probably non correct
 	T_QUATERNION3 = 0x3,
 	T_QUATERNION3_CONST = 0x4,
 	T_HERMITE3 = 0x5,
-	T_POLAR3KEY = 0x6,
+	T_QuatFramev14 = 0x6, // before lmtver50 T_POLAR3KEY
 	T_POLAR3 = 0x7,
 	T_SMALLEST3 = 0x8,
 	T_LINEARKEY = 0x9,
@@ -68,8 +69,11 @@ struct LMTQuat3Frame
 
 struct LMTQuatFramev14
 {
-    uint var1;
-    uint var2;
+    uint64 w:14;
+    uint64 x:14;
+    uint64 y:14;
+    uint64 z:14;
+    uint64 duration:8;
 };
 
 
@@ -77,9 +81,9 @@ struct LMTQuatFramev14
 struct FrameData // MOTION_PARAM
 {
     TYPE     buffer_type;//BufferType type
-    USAGE    usage;//Usage usage
+    USAGE    usage<fgcolor=0xcc8080>;//Usage usage
     ubyte    joint_type;//JoinType jnt_type
-    ubyte    bone_index;//boneID jnt_no
+    ubyte    bone_index<fgcolor=0xe5e5b2>;//boneID jnt_no
     float    weight;// weight ?
     uint     buffer_size;//BufferSize param_size
     uint     buffer_offset;//BufferOffset pparam 
@@ -104,21 +108,18 @@ struct FrameData // MOTION_PARAM
     
 };
 
-struct Attack
+struct Attribute
 {
-    uint unk_00;
-    uint start_time;
+    uint group;
+    uint frame;
 };
 
-struct AttackSFX
-{
-    uint sfx_id;
-    uint start_time;
-};
 
-struct SFX
+struct Event
 {
-    uint16 sfx_id;
+    uint16  event_id[32];
+    uint32  num_attributes;
+    uint32  ofs_attributes;
 };
 
 
@@ -127,23 +128,22 @@ struct Track // SEQUENCE_INFO
     uint     ofs_frame; //Offset
     uint     num_bones; //BoneCount
     uint     num_frames; //FrameCount
-    float    unk_01[9]; //LoopFrame (one uint)
-    SFX      sfx[32]<fgcolor=0xa77856>;
-    uint     count_01;
-    uint     ofs_buffer_01;
-    SFX      sfx1[32]<fgcolor=0xa77856>;
-    uint     count_02;
-    uint     ofs_buffer_02;
+    float    loop_frame; //LoopFrame (one uint)
+    Vec3     init_position;
+    float    padding;
+    Vec4     init_quaternion;
+    Event    collision_attributes<fgcolor=0xa77856>;
+    Event    motion_se<fgcolor=0xa77856>;
     local uint64 savepos = FTell();
-    if (ofs_buffer_01>0)
+    if (collision_attributes.ofs_attributes>0)
     {
-        FSeek(ofs_buffer_01);
-        Attack   atk_hit[count_01]<fgcolor=0x577806>;
+        FSeek(collision_attributes.ofs_attributes);
+        Attribute  col_attributes[collision_attributes.num_attributes]<fgcolor=0x577806>;
     };
-    if (ofs_buffer_02>0)
+    if (motion_se.ofs_attributes>0)
     {
-        FSeek(ofs_buffer_02);
-        AttackSFX    atk_sfx[count_02]<fgcolor=0x977806>;
+        FSeek(motion_se.ofs_attributes);
+        Attribute    motion_se_attributes[motion_se.num_attributes]<fgcolor=0x977806>;
     }   
     FSeek(savepos);
     struct

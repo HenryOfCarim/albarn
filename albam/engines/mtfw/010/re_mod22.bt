@@ -3,8 +3,8 @@
 //
 //      File: 
 //   Authors: HenryVIII
-//   Version: 0.3
-//   Purpose: Parsing Resident evil mod 210-211-212 mesh format
+//   Version: 0.1
+//   Purpose: Parsing Resident evil mod 229 mesh format
 //  Category: Modding
 // File Mask: .mod
 //  ID Bytes: 4D 4F 44 00 D2
@@ -40,9 +40,10 @@ struct MODHeader
     uint size_vertex_buffer;
     uint reversed;
     uint num_groups;
+    uint unk_00;
     uint offset_bones;
     uint offset_groups;
-    uint offset_material;
+    uint offset_materials;
     uint offset_meshes;
     uint offset_buffer_vertices;
     uint offset_buffer_indices;
@@ -58,15 +59,15 @@ struct MODHeader
     float box_max_x;
     float box_max_y;
     float box_max_z;
-    float box_max_w;
+    //float box_max_w;
     uint middist;
     uint lowdist;
     uint light_group;
     ubyte strip_type;
     ubyte memory;
     ushort reserved;
-    if (version == 210 || version == 212)
-        uint num_weight_bounds;
+    //if (version == 210 || version == 229)
+    //    uint num_weight_bounds;
 };
 
 struct Bone
@@ -696,7 +697,7 @@ if (header.num_bones > 0)
 FSeek(header.offset_groups);
 PartsInfo groups[header.num_groups]<fgcolor=0xaf75c0>;
 if(header.version == 210 || header.version == 229)
-    FSeek(header.offset_meshes);
+    FSeek(header.offset_materials);
     MaterialName material_names[header.num_materials_names]<fgcolor=0x4333c3>;
 
 if(header.version == 211)
@@ -706,7 +707,7 @@ FSeek(header.offset_meshes);
 struct{
     Mesh mesh[header.num_meshes]<optimize=false,fgcolor=0x00aaff>;
 }meshes;
-
+/*
 if (header.version == 211)
 {
     uint num_weight_bounds;
@@ -717,4 +718,4 @@ if (header.version == 210 || header.version == 212)
 {
     WeightBound weight_bound[header.num_weight_bounds]<fgcolor=0x50c050>;
 };
-
+*/

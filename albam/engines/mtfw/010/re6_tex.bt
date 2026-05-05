@@ -20,25 +20,122 @@ struct CubeFace
     float   uv[2];
 };
 
+
+enum Attr //rTexture::TATTR : __int32
+{
+  TATTR_FILLMARGIN = 0x1,
+  TATTR_GRAYSCALE = 0x2,
+  TATTR_NUKI = 0x4,
+  TATTR_DITHER = 0x8,
+  TATTR_LINEAR = 0x10,
+  TATTR_SPECIAL = 0x20,
+};
+
+
+enum FormatType//nDraw::FORMAT_TYPE : __int32
+{
+  FORMAT_UNKNOWN = 0x0,
+  FORMAT_R32G32B32A32_FLOAT = 0x1,
+  FORMAT_R16G16B16A16_FLOAT = 0x2,
+  FORMAT_R16G16B16A16_UNORM = 0x3,
+  FORMAT_R16G16B16A16_SNORM = 0x4,
+  FORMAT_R32G32_FLOAT = 0x5,
+  FORMAT_R10G10B10A2_UNORM = 0x6,
+  FORMAT_R8G8B8A8_UNORM = 0x7,
+  FORMAT_R8G8B8A8_SNORM = 0x8,
+  FORMAT_R8G8B8A8_UNORM_SRGB = 0x9,
+  FORMAT_B4G4R4A4_UNORM = 0xA,
+  FORMAT_R16G16_FLOAT = 0xB,
+  FORMAT_R16G16_UNORM = 0xC,
+  FORMAT_R16G16_SNORM = 0xD,
+  FORMAT_R32_FLOAT = 0xE,
+  FORMAT_D24_UNORM_S8_UINT = 0xF,
+  FORMAT_R16_FLOAT = 0x10,
+  FORMAT_R16_UNORM = 0x11,
+  FORMAT_A8_UNORM = 0x12,
+  FORMAT_BC1_UNORM = 0x13,
+  FORMAT_BC1_UNORM_SRGB = 0x14,
+  FORMAT_BC2_UNORM = 0x15,
+  FORMAT_BC2_UNORM_SRGB = 0x16,
+  FORMAT_BC3_UNORM = 0x17,
+  FORMAT_BC3_UNORM_SRGB = 0x18,
+  FORMAT_BCX_GRAYSCALE = 0x19,
+  FORMAT_BCX_ALPHA = 0x1A,
+  FORMAT_BC5_SNORM = 0x1B,
+  FORMAT_B5G6R5_UNORM = 0x1C,
+  FORMAT_B5G5R5A1_UNORM = 0x1D,
+  FORMAT_BCX_NM1 = 0x1E,
+  FORMAT_BCX_NM2 = 0x1F,
+  FORMAT_BCX_RGBI = 0x20,
+  FORMAT_BCX_RGBY = 0x21,
+  FORMAT_B8G8R8X8_UNORM = 0x22,
+  FORMAT_BCX_RGBI_SRGB = 0x23,
+  FORMAT_BCX_RGBY_SRGB = 0x24,
+  FORMAT_BCX_NH = 0x25,
+  FORMAT_R11G11B10_FLOAT = 0x26,
+  FORMAT_B8G8R8A8_UNORM = 0x27,
+  FORMAT_B8G8R8A8_UNORM_SRGB = 0x28,
+  FORMAT_BCX_RGBNL = 0x29,
+  FORMAT_BCX_YCCA = 0x2A,
+  FORMAT_BCX_YCCA_SRGB = 0x2B,
+  FORMAT_R8_UNORM = 0x2C,
+  FORMAT_B8G8R8A8_UNORM_LE = 0x2D,
+  FORMAT_B10G10R10A2_UNORM_LE = 0x2E,
+  FORMAT_BCX_SRGBA = 0x2F,
+  FORMAT_SE5M9M9M9 = 0x30,
+  FORMAT_R10G10B10A2_FLOAT = 0x31,
+  FORMAT_YVU420P2_CSC1 = 0x32,
+  FORMAT_R8A8_UNORM = 0x33,
+  FORMAT_A8_UNORM_WHITE = 0x34,
+};
+
+enum Type //nDraw::TEXTURE_TYPE : __int32
+{
+  TT_UNDEFINED = 0x0,
+  TT_1D = 0x1,
+  TT_2D = 0x2,
+  TT_3D = 0x3,
+  TT_1DARRAY = 0x4,
+  TT_2DARRAY = 0x5,
+  TT_CUBE = 0x6,
+  TT_CUBEARRAY = 0x7,
+  TT_2DMS = 0x8,
+  TT_2DMSARRAY = 0x9,
+};
+
+
 typedef struct TEX157Header
 {
     char    id_magic[4];
-    uint32  packed_data_1;
-    uint32  packed_data_2;
-    uint32  packed_data_3;
+    uint32 version:16;
+    uint32 attr:8; //<name = "Buffer type", read = Attr>;
+    uint32 prebias:4;
+    uint32 type:4;
+    uint32 num_mipmaps_per_image: 6; //num mipmaps level_count
+    uint32 width: 13;
+    uint32 height: 13;
+    uint32 num_images: 8; // array_count
+    uint32 format: 8; // nDraw::FORMAT_TYPE
+    uint32 depth: 13;
+    uint32 auto_resize: 1;
+    uint32 render_target: 1;
+    uint32 use_vtf: 1;
+    //uint32  packed_data_1;
+    //uint32  packed_data_2;
+    //uint32  packed_data_3;
 
-    local uint32    reserved_01 = (packed_data_1 >>16) & 0x00ff;
-    local uint32    shift = (packed_data_1 >>24) & 0x000f;
-    local uint32    dimension = (packed_data_1 >>28) & 0x00ff;
+    //local uint32    reserved_01 = (packed_data_1 >>16) & 0x00ff;
+    //local uint32    shift = (packed_data_1 >>24) & 0x000f;
+    //local uint32    dimension = (packed_data_1 >>28) & 0x00ff;
 
-    local uint32    num_mipmaps_per_image = packed_data_2 & 0x3f;
-    local uint32    width = (packed_data_2 >> 6) & 0x1fff;
-    local uint32    height = (packed_data_2 >> 19) & 0x1fff;
+    //local uint32    num_mipmaps_per_image = packed_data_2 & 0x3f;
+    //local uint32    width = (packed_data_2 >> 6) & 0x1fff;
+    //local uint32    height = (packed_data_2 >> 19) & 0x1fff;
 
-    local uint32    num_images = packed_data_3 & 0xff;
-    local uint32    compression_format = (packed_data_3 >> 8) & 0xff;
-    local uint32    constant = (packed_data_3 >> 16) & 0x1fff;
-    local uint32    reversed_02 = (packed_data_3 >>29) & 0x003;
+    //local uint32    num_images = packed_data_3 & 0xff;
+    //local uint32    compression_format = (packed_data_3 >> 8) & 0xff;
+    //local uint32    constant = (packed_data_3 >> 16) & 0x1fff;
+    //local uint32    reversed_02 = (packed_data_3 >>29) & 0x003;
     if (num_images == 6)
     {
         CubeFace cube_face[3]<fgcolor=0xaf75c0>;

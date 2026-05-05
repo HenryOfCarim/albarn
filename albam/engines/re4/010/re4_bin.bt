@@ -142,8 +142,8 @@ struct UhdBinHeader
 
     uint vertex_texcoord_offset; // UV
     uint weight_offset;
-    byte weight_count;
-    byte bone_count;
+    ubyte weight_count;
+    ubyte bone_count;
     ushort material_count;
     uint material_offset;
 

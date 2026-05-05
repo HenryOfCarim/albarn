@@ -1,0 +1,58 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+// Took from https://github.com/JADERLINK/RE4-UHD-BIN-TOOL/blob/main/RE4_UHD_BIN_TOOL
+typedef struct UNK
+{
+    ushort width;
+    ushort height;
+    uint PixelFormatType;
+    uint id_offset;
+    
+    uint wrap_s; //default: 1
+    uint wrap_t; //default: 1
+    uint min_filter; //default: 1
+    uint mag_filter; //default: 1
+    float lod_bias; //default: 0
+    byte enable_lod; //default: 0
+    byte min_lod; //default: 0
+    byte max_lod; //default: 0
+    byte is_compressed; //default: 0
+    FSeek(id_offset);
+    uint PackID<fgcolor=0xb02050>;
+    uint TextureID<fgcolor=0xb02050>;
+};
+
+typedef struct Data
+{
+    uint image_data_offset;
+    uint palette_offset;
+    local uint64 checkpoint = FTell();
+    FSeek(image_data_offset);
+    UNK unk_data<fgcolor=0x231E6f>;
+    FSeek(checkpoint);
+};
+
+struct TPLHeader
+{
+    uint magic;
+    uint TplAmount;
+    uint StartOffset;
+};
+
+
+TPLHeader header<fgcolor=0x008000>;
+FSeek(header.StartOffset);
+Data data[header.TplAmount]<optimize=false,fgcolor=0x800080>;
+
+

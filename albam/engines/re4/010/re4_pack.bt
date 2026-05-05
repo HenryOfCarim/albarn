@@ -1,0 +1,31 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+local uint64 checkpoint;
+typedef struct FileEntry
+{
+    uint32 offset;
+    checkpoint = FTell();
+    FSeek(offset);
+    uint32 size;
+    uint32 unk03;
+    uint16 unk01;
+    uint16 unk02;
+    uint32 is_dds;
+    byte   raw_data[size]<bgcolor=0x552255>;
+    FSeek(checkpoint);
+};
+
+uint file_name;
+uint num_files;
+//uint unk_04[unk_num];
+FileEntry files[num_files]<optimize=false,bgcolor=0x22535>;

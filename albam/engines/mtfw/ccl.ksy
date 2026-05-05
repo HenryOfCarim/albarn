@@ -6,20 +6,20 @@ meta:
   
 seq:
   - {id: id_magic, contents: [0x43, 0x43, 0x4c, 0x00]}
-  - {id: unk_id, type: u4}
-  - {id: unk_num, type: u4}
+  - {id: id, type: u4}
+  - {id: num_block, type: u4}
   - {id: size, type: u4}
-  - {id: data, type: unk_block, repeat: expr, repeat-expr: unk_num}
+  - {id: data, type: col_info, repeat: expr, repeat-expr: num_block}
   
 types:
-  unk_block:
+  col_info:
     seq:
-      - {id: unk_00, type: u4}
-      - {id: unk_02, type: u2}
-      - {id: unk_03, type: u2}
-      - {id: unk_04, type: u1}
-      - {id: unk_05, type: u1}
-      - {id: unk_06, type: u2}
+      - {id: attr, type: u4}
+      - {id: ref_joint, type: u2}
+      - {id: pair_joint, type: u2}
+      - {id: shape, type: u1}
+      - {id: reserved, type: u1, repeat: expr, repeat-expr: 3}
+      - {id: reserved1, type: f4}
       - {id: unk_07, type: u4}
       - {id: unk_floats, type: f4, repeat: expr, repeat-expr: 11}
       - {id: unk_08, type: u4}
