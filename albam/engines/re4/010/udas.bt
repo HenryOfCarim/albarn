@@ -1,0 +1,44 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+local uint64 checkpoint;
+typedef struct UDASHeader
+{
+    uint unk_id[8];
+    uint type;
+    uint size;
+    uint unk00;
+    uint files_offset;
+};
+
+typedef struct Extension
+{
+    char extension[4];
+};
+
+typedef struct Data
+{
+    uint offset;
+    checkpoint = FTell();
+    FSeek(header.files_offset + offset);
+    uint data;
+    FSeek(checkpoint);
+};
+
+UDASHeader header;
+FSeek(header.files_offset);
+uint num_files<fgcolor=0xa04410>;
+uint padding[3];
+uint offsets[num_files];
+Extension extension_table[num_files]<fgcolor=0x208010>;
+
