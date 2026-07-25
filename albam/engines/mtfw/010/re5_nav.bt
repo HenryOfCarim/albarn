@@ -17,25 +17,12 @@ struct FVector3
     float z;
 };
 
-struct UnkData00
+struct FFlag
 {
-    uint32 d<bgcolor=0x704520>; // 3
-    uint32 vert_a;
-    uint32 vert_b;
-    uint32 vert_c;
-    uint32 num_neiborh<fgcolor=0x50c520>;
-    uint32 unk_face_index;
-    uint32 j;
-    uint32 k;
-};
-
-struct UnkFaceDataCopy
-{
-    uint32 face_id;
-    uint32 idb;
-    uint32 idc;
-    float unk_cost<fgcolor=0x7045c0>;
-
+    uint32 a:8;
+    uint32 b:8;
+    uint32 c:8;
+    uint32 d:8;
 };
 
 struct BBox
@@ -44,22 +31,43 @@ struct BBox
     float max[4];
 };
 
+struct Neighbor
+{
+    uint32 face_index;
+    uint32 padding;
+    uint32 edge;
+    float centroid_distance<fgcolor=0x7045c0>;
 
-typedef struct UnkFaceData
+};
+
+
+struct Face
 {
     uint32 face_id;
     uint32 idb;
-    uint32 idc;
-    UnkData00 unk_data;
-    float unk_cost<fgcolor=0x7045c0>;
-    UnkFaceDataCopy clone_data[(unk_data.num_neiborh - 1)];
+    FFlag  flags<fgcolor=0x609060>;
+    uint32 vertex_per_face;
+    uint32 vert_a;
+    uint32 vert_b;
+    uint32 vert_c;
+    uint32 num_neighbors;
+    Neighbor neighbors[num_neighbors];
 };
 
 
-struct ZeroFill
+struct GridFace
 {
-    ubyte fill[53];
+    uint32 face_index;
+    uint32 padding;
 };
+
+typedef struct GridCell
+{
+    uint32 num_faces;
+    GridFace grid_faces[num_faces];
+    
+};
+
 
 
 char magic[4];
@@ -68,10 +76,10 @@ uint32 unk_01;
 uint32 num_vertices;
 uint32 num_faces;
 uint32 unk_04;
-FVector3 vertices[num_vertices];
-UnkFaceData faces[num_faces]<optimize=false, fgcolor=0x804080>;
+FVector3 vertices[num_vertices]<bgcolor=0x707020>;
+Face faces[num_faces]<optimize=false, bgcolor=0x604060>;
 uint32 null;
 BBox bounding_box<fgcolor=0x808040>;
-uint32 unk_id[4];// same in nav 07 55 15 00
-//ubyte  nulls[6912]<fgcolor=404080>;
-ZeroFill fill[num_faces]<fgcolor=404080>;
+ubyte    unk_id[5];// same in way 07 55 15 00
+ubyte  nulls[5460]<fgcolor=0x4010A0>;
+GridCell fill[4096]<optimize=false,bgcolor=0x407050>;

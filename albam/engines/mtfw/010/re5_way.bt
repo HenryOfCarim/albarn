@@ -1,0 +1,50 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct Waypoint
+{
+    uint32 index;
+    float x_coord;
+    float y_coord;
+    float z_coord;
+    uint32 unk_00;
+    uint16 unk_01[4];
+};
+
+struct UnkBlock01
+{
+    uint16 test[6];
+};
+
+struct GridPoint
+{
+    uint32 face_index;
+    uint32 padding;
+};
+
+typedef struct GridCell
+{
+    uint32 num_points;
+    GridPoint grid_points[num_points];
+    
+};
+
+
+char magic[4];
+uint32 version;
+uint32 num_wapoints;
+Waypoint waypoints[num_wapoints]<fgcolor=0x10ca20>;
+ubyte magic2[5];
+float bbox[6];
+uint32 unk_01;
+ubyte nulls[336];
+GridCell cells[256]<optimize=false,bgcolor=0x407050>;
